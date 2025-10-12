@@ -49,7 +49,7 @@
         <div class="tab-content" id="authTabContent">
             <!-- Signin Form -->
             <div class="tab-pane fade show active" id="signin" role="tabpanel" aria-labelledby="signin-tab">
-                <h3 class="text-center mb-3 text-black">Welcome Back!</h3>
+                <h3 class="text-center mb-3 text-black">Admin SignIn</h3>
                 <form action="#" method="post">
                     <div class="mb-3">
                         <input type="email" class="form-control" placeholder="Email Address" required>
@@ -71,7 +71,7 @@
 
             <!-- Signup Form -->
             <div class="tab-pane fade" id="signup" role="tabpanel" aria-labelledby="signup-tab">
-                <h3 class="text-center mb-3 text-Black">Create Account</h3>
+                <h3 class="text-center mb-3 text-Black">Admin SignUp</h3>
                 <form action="#" method="post">
                     <div class="mb-3">
                         <input type="text" class="form-control" placeholder="Full Name" required>
@@ -214,50 +214,65 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script  type="module" src="js/firebase.js"></script>
 
-<script>
-// Signin form
+
+<script type="module">
+import {
+  adminSignup,
+  adminSignin,
+  adminSignout,
+  adminResetPassword,
+} from "./js/admin.js";
+
+// ---------- SIGNIN ----------
 const signinForm = document.querySelector('#signin form');
-signinForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const email = signinForm.querySelector('input[type="email"]').value;
-    const password = signinForm.querySelector('input[type="password"]').value;
+signinForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const email = signinForm.querySelector('input[type="email"]').value;
+  const password = signinForm.querySelector('input[type="password"]').value;
 
-    signin(email, password)
-        .then(() => window.location.href = "index.html")
-        .catch(err => alert(err.message));
+  adminSignin(email, password)
+    .then(() => {
+      alert("Login successful!");
+      window.location.href = "dashboard.html"; // redirect to admin dashboard
+    })
+    .catch((err) => alert(err.message));
 });
 
-// Signup form
+// ---------- SIGNUP ----------
 const signupForm = document.querySelector('#signup form');
-signupForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const fullName = signupForm.querySelector('input[placeholder="Full Name"]').value;
-    const email = signupForm.querySelector('input[type="email"]').value;
-    const password = signupForm.querySelector('input[placeholder="Password"]').value;
-    const confirmPassword = signupForm.querySelector('input[placeholder="Confirm Password"]').value;
+signupForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const fullName = signupForm.querySelector('input[placeholder="Full Name"]').value;
+  const email = signupForm.querySelector('input[type="email"]').value;
+  const password = signupForm.querySelector('input[placeholder="Password"]').value;
+  const confirmPassword = signupForm.querySelector('input[placeholder="Confirm Password"]').value;
 
-    if(password !== confirmPassword) {
-        alert("Passwords do not match");
-        return;
-    }
+  if (password !== confirmPassword) {
+    alert("Passwords do not match!");
+    return;
+  }
 
-    signup(fullName, email, password)
-        .then(() => {
-            alert("Signup successful! Please login.");
-            document.getElementById('signin-tab').click();
-        })
-        .catch(err => alert(err.message));
+  adminSignup(fullName, email, password)
+    .then(() => {
+      alert("Admin registered successfully! Please log in.");
+      document.getElementById("signin-tab").click();
+    })
+    .catch((err) => alert(err.message));
 });
 
-// Forgot password
-document.getElementById('forgotPasswordLink').addEventListener('click', e => {
-    e.preventDefault();
-    const email = prompt("Enter your email to reset password:");
-    if(email) resetPassword(email).then(() => alert("Password reset email sent!")).catch(err => alert(err.message));
+// ---------- RESET PASSWORD ----------
+document.getElementById("forgotPasswordLink").addEventListener("click", (e) => {
+  e.preventDefault();
+  const email = prompt("Enter your email to reset password:");
+  if (email) {
+    adminResetPassword(email)
+      .then(() => alert("Password reset email sent!"))
+      .catch((err) => alert(err.message));
+  }
 });
 </script>
+
 
 
     </body>
