@@ -18,7 +18,7 @@ exports.handler = async function(event, context) {
   try {
     const { eventId, tickets, totalAmount } = JSON.parse(event.body);
 
-    // Get event details from Firebase
+    // Fetch event details
     const eventSnapshot = await db.ref(`events/${eventId}`).once("value");
     if (!eventSnapshot.exists()) {
       return { statusCode: 400, body: JSON.stringify({ error: "Event not found" }) };
@@ -29,21 +29,21 @@ exports.handler = async function(event, context) {
       return { statusCode: 400, body: JSON.stringify({ error: "Not enough tickets left" }) };
     }
 
-    // Generate booking ID
     const bookingId = "BK" + Date.now();
 
-    // Save booking to Firebase (status: pending)
+    // Save booking in Firebase
     await db.ref(`bookings/${bookingId}`).set({
       bookingId,
       eventId,
       eventName: eventData.name,
       tickets,
       totalAmount,
+      image: eventData.imageUrl || "",
       status: "pending",
       createdAt: new Date().toISOString()
     });
 
-    // Create Stripe session
+    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
@@ -51,7 +51,7 @@ exports.handler = async function(event, context) {
           price_data: {
             currency: "usd",
             product_data: { name: eventData.name },
-            unit_amount: totalAmount * 100 // Stripe expects cents
+            unit_amount: totalAmount * 100
           },
           quantity: tickets
         }

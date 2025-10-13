@@ -184,11 +184,9 @@ proceedBtn.addEventListener("click", async () => {
     return;
   }
 
-  // Generate a unique booking ID
   const bookingId = 'BK' + Date.now() + Math.floor(Math.random() * 1000);
 
   try {
-    // Call serverless function to create Stripe checkout session
     const response = await fetch("/.netlify/functions/createStripeSession", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -204,8 +202,7 @@ proceedBtn.addEventListener("click", async () => {
     const data = await response.json();
 
     if (data.url) {
-      // Redirect to Stripe Checkout
-      window.location.href = data.url;
+      window.location.href = data.url; // Go to Stripe checkout
     } else {
       alert("Failed to initiate payment. Try again.");
     }
@@ -215,6 +212,7 @@ proceedBtn.addEventListener("click", async () => {
     alert("Error creating payment session. Try again.");
   }
 });
+
 
 
 // Initial load
