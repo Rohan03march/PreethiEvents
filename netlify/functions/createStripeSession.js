@@ -58,7 +58,10 @@ exports.handler = async function(event, context) {
       ],
       mode: "payment",
       success_url: `https://preethievents.netlify.app/success.html?bookingId=${bookingId}`,
-      cancel_url: `https://preethievents.netlify.app/cancel.html`
+      cancel_url: `https://preethievents.netlify.app/cancel.html`,
+      metadata: {
+    bookingId: bookingId
+  }
     });
 
     return { statusCode: 200, body: JSON.stringify({ url: session.url }) };
