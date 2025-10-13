@@ -3,8 +3,10 @@ const admin = require("firebase-admin");
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
   admin.initializeApp({
-    credential: admin.credential.applicationDefault(), // or serviceAccountKey
+    credential: admin.credential.cert(serviceAccount),
     databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
   });
 }
