@@ -1,0 +1,25 @@
+{
+  "name": "preethievents",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rohan03march/PreethiEvents.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Rohan03march/PreethiEvents/issues"
+  },
+  "homepage": "https://github.com/Rohan03march/PreethiEvents#readme",
+  "dependencies": {
+    "firebase-admin": "^13.5.0",
+    "stripe": "^19.1.0"
+  }
+}
