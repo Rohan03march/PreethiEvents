@@ -310,17 +310,123 @@ https://templatemo.com/tm-583-festava-live
 
 
             <section class="schedule-section section-padding" id="section_4">
-                <div class="container">
-                    <div class="row">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center mb-5">
+        <h2 class="text-white mb-4">Latest Events</h2>
+      </div>
+    </div>
 
-                        <div class="col-12 text-center">
-                            <h2 class="text-white mb-4">Latest Events</h1>
+    <!-- Events Grid -->
+    <div id="eventsList" class="row g-4 justify-content-center">
+      <!-- Dynamic events will appear here -->
+    </div>
+  </div>
+</section>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+  import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
-                            <!--Here comes the Listed shows-->
-                        </div>
-                    </div>
-                </div>
-            </section>
+  const firebaseConfig = {
+    apiKey: "AIzaSyA3ChaO6pXKubN4WeVffJK5q0tPmpT1XEc",
+    authDomain: "partybooking-ecdf1.firebaseapp.com",
+    databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
+    projectId: "partybooking-ecdf1",
+    storageBucket: "partybooking-ecdf1.appspot.com",
+    messagingSenderId: "119112973933",
+    appId: "1:119112973933:web:87037ff1b10958bb118964",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const eventsList = document.getElementById("eventsList");
+
+  async function loadEvents() {
+    try {
+      const snapshot = await get(ref(db, "events"));
+      eventsList.innerHTML = "";
+
+      if (snapshot.exists()) {
+        const events = snapshot.val();
+
+        Object.keys(events).forEach((id) => {
+          const e = events[id];
+          const eventDate = e.dateTime ? new Date(e.dateTime).toLocaleString() : "TBD";
+          const imageUrl = e.imageUrl || "https://via.placeholder.com/220x220?text=No+Image";
+
+          const ticketsLeft = Number(e.tickets) || 0;
+
+const ticketsInfo = ticketsLeft > 0 
+  ? `<span class="text-warning">${ticketsLeft} tickets left</span>` 
+  : `<span class="text-danger fw-bold">Sold Out</span>`;
+
+const disabledAttr = ticketsLeft === 0 ? "disabled" : "";
+
+eventsList.innerHTML += `
+  <div class="col-lg-4 col-md-6">
+    <div class="card bg-dark text-white border-0 shadow-sm h-100">
+      <img src="${e.imageUrl}" class="card-img-top" alt="${e.name}" style="height:220px;object-fit:cover;">
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title text-primary">${e.name}</h5>
+        <p class="card-text text-light small mb-2">${e.description || "No description provided."}</p>
+        <p class="card-text d-flex justify-content-between align-items-center mb-1">
+          <span><i class="bi bi-currency-dollar"></i> ${e.cost || 0} per ticket</span>
+          ${ticketsInfo}
+        </p>
+        <div class="mt-auto">
+          <button class="btn btn-primary w-100" onclick="window.location.href='myBooking.html?id=${id}'" ${disabledAttr}>
+            <i class="bi bi-ticket-perforated"></i> Book Now
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+`;
+
+        });
+      } else {
+        eventsList.innerHTML = `<p class="text-center text-light">No events found.</p>`;
+      }
+    } catch (err) {
+      console.error(err);
+      eventsList.innerHTML = `<p class="text-center text-danger">Failed to load events.</p>`;
+    }
+  }
+
+  loadEvents();
+</script>
+
+<style>
+  .schedule-section {
+    background: #121212;
+    padding: 60px 0;
+  }
+
+  .card.bg-dark {
+    transition: all 0.3s ease;
+  }
+
+  .card.bg-dark:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px rgba(13, 110, 253, 0.3);
+  }
+
+  .card-title {
+    font-weight: 600;
+  }
+
+  .btn-primary {
+    background-color: #EE5007;
+    border: none;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover {
+    background-color: #EE5007;
+  }
+</style>
+
+
             <section class="contact-section section-padding" id="section_6">
                 <div class="container">
                     <div class="row">

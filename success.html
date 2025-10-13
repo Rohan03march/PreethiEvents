@@ -1,0 +1,37 @@
+<h1>Booking Confirmed!</h1>
+<p id="bookingInfo"></p>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+const firebaseConfig = {
+  // your config
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const params = new URLSearchParams(window.location.search);
+const bookingId = params.get("bookingId");
+
+async function confirmBooking() {
+  const snapshot = await get(ref(db, `bookings/${bookingId}`));
+  if (!snapshot.exists()) return;
+
+  const booking = snapshot.val();
+  // Deduct tickets from event
+  const eventRef = ref(db, `events/${booking.eventId}`);
+  const eventSnap = await get(eventRef);
+  const eventData = eventSnap.val();
+
+  const remaining = eventData.tickets - booking.tickets;
+  await update(eventRef, { tickets: remaining });
+
+  // Update booking status
+  await update(ref(db, `bookings/${bookingId}`), { status: "paid" });
+
+  document.getElementById("bookingInfo").innerText = `Successfully booked ${booking.tickets} tickets for "${booking.eventName}".`;
+}
+
+confirmBooking();
+</script>
