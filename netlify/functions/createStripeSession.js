@@ -96,12 +96,11 @@ exports.handler = async function(event, context) {
   try {
     const { eventId, tickets, totalAmount, userId, bookingId } = JSON.parse(event.body);
 
-    // Check if booking exists
+    // Check if booking already exists
     const bookingSnapshot = await db.ref(`bookings/${bookingId}`).once("value");
     if (bookingSnapshot.exists()) {
       const existingBooking = bookingSnapshot.val();
       if (existingBooking.paymentIntentId) {
-        // Fetch PaymentIntent from Stripe
         const paymentIntent = await stripe.paymentIntents.retrieve(existingBooking.paymentIntentId);
         const status = paymentIntent.status === "succeeded" ? "paid" : "pending";
         return { statusCode: 200, body: JSON.stringify({ status, url: existingBooking.checkoutUrl || null }) };
@@ -145,7 +144,7 @@ exports.handler = async function(event, context) {
       }
     });
 
-    // Save booking in Firebase with username and Stripe session info
+    // Save booking in Firebase
     await db.ref(`bookings/${bookingId}`).set({
       bookingId,
       eventId,
