@@ -144,11 +144,11 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // Platform key (Rohan)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async function(event, context) {
   try {
-    const { eventId, tickets, totalAmount } = JSON.parse(event.body);
+    const { eventId, tickets, totalAmount, userId } = JSON.parse(event.body); // include userId from frontend
 
     // Fetch event details
     const snapshot = await db.ref(`events/${eventId}`).once("value");
@@ -161,7 +161,7 @@ exports.handler = async function(event, context) {
 
     const bookingId = "BK" + Date.now();
 
-    // Store booking in Firebase (just like first code)
+    // Store booking in Firebase with userId
     await db.ref(`bookings/${bookingId}`).set({
       bookingId,
       eventId,
@@ -170,11 +170,12 @@ exports.handler = async function(event, context) {
       totalAmount,
       image: eventData.imageUrl || "",
       status: "pending",
+      bookedBy: userId,       // <--- store the user who booked
       createdAt: new Date().toISOString()
     });
 
     const connectedAccountId = eventData.stripeAccountId;
-    const platformFee = Math.round(totalAmount * 0.1 * 100); // 10% fee
+    const platformFee = Math.round(totalAmount * 0.1 * 100);
     const pricePerTicket = totalAmount / tickets;
 
     // Create Stripe checkout session

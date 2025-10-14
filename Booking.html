@@ -140,6 +140,7 @@ proceedBtn.addEventListener("click", async () => {
   const bookingId = 'BK' + Date.now() + Math.floor(Math.random()*1000);
   proceedBtn.disabled = true;
   proceedBtn.textContent = "Processing...";
+  const userId = auth.currentUser.uid;
 
   try {
     const response = await fetch("/.netlify/functions/createStripeSession", {
@@ -150,6 +151,7 @@ proceedBtn.addEventListener("click", async () => {
         eventName: bookingName.textContent,
         tickets: ticketsSelected,
         totalAmount: costPerTicket*ticketsSelected,
+        userId: userId ,
         bookingId
       })
     });
