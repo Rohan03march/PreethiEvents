@@ -264,59 +264,51 @@ document.getElementById("addEventForm").addEventListener("submit", async e => {
       } else { eventsContainer.innerHTML = "<p>No events found.</p>"; }
     }
 
-    // Edit Modal with image support
-    window.openEditModal = async (id) => {
-      const snapshot = await get(ref(database, `events/${id}`));
-      if (snapshot.exists()) {
-        const e = snapshot.val();
-        editEventId.value = id;
-        editEventName.value = e.name;
-        editEventDateTime.value = e.dateTime;
-        editEventDescription.value = e.description;
-        editEventCost.value = e.cost;
-        editEventTickets.value = e.tickets || "";
-        const editEventPreview = document.getElementById("editEventPreview");
-        editEventPreview.src = e.imageUrl || "";
-        editEventPreview.dataset.oldUrl = e.imageUrl || "";
-        new bootstrap.Modal(editEventModal).show();
-      }
+   document.getElementById("editEventForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = editEventId.value;
+  const editEventImage = document.getElementById("editEventImage");
+  const editEventPreview = document.getElementById("editEventPreview");
+  let imageUrl = editEventPreview.dataset.oldUrl; // keep existing image
+
+  try {
+    // Upload new image if selected
+    const newImage = editEventImage.files[0];
+    if (newImage) {
+      const formData = new FormData();
+      formData.append("file", newImage);
+      formData.append("upload_preset", "eventBooking");
+      formData.append("folder", "events");
+      const res = await fetch(`https://api.cloudinary.com/v1_1/dtwcxssvj/image/upload`, { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.secure_url) imageUrl = data.secure_url;
+      else throw new Error("Image upload failed");
+    }
+
+    // Get the old event to preserve stripeAccountId
+    const snapshot = await get(ref(database, `events/${id}`));
+    const oldEvent = snapshot.exists() ? snapshot.val() : {};
+
+    const updatedEvent = {
+      name: editEventName.value,
+      dateTime: editEventDateTime.value,
+      description: editEventDescription.value,
+      cost: Number(editEventCost.value),
+      tickets: editEventTickets.value || null,
+      imageUrl,
+      stripeAccountId: oldEvent.stripeAccountId || "acct_1SI2NnIzm242HFji", // keep old ID or default
     };
 
-    document.getElementById("editEventForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const id = editEventId.value;
-      const editEventImage = document.getElementById("editEventImage");
-      const editEventPreview = document.getElementById("editEventPreview");
-      let imageUrl = editEventPreview.dataset.oldUrl; // keep existing image
+    await set(ref(database, `events/${id}`), updatedEvent);
+    alert("Event updated successfully!");
+    bootstrap.Modal.getInstance(editEventModal).hide();
+    loadEvents();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to update event.");
+  }
+});
 
-      try {
-        const newImage = editEventImage.files[0];
-        if (newImage) {
-          const formData = new FormData();
-          formData.append("file", newImage);
-          formData.append("upload_preset", "eventBooking");
-          formData.append("folder", "events");
-          const res = await fetch(`https://api.cloudinary.com/v1_1/dtwcxssvj/image/upload`, { method: "POST", body: formData });
-          const data = await res.json();
-          if (data.secure_url) imageUrl = data.secure_url;
-          else throw new Error("Image upload failed");
-        }
-
-        const updatedEvent = {
-          name: editEventName.value,
-          dateTime: editEventDateTime.value,
-          description: editEventDescription.value,
-          cost: Number(editEventCost.value),
-          tickets: editEventTickets.value || null,
-          imageUrl,
-        };
-
-        await set(ref(database, `events/${id}`), updatedEvent);
-        alert("Event updated successfully!");
-        bootstrap.Modal.getInstance(editEventModal).hide();
-        loadEvents();
-      } catch (err) { console.error(err); alert("Failed to update event."); }
-    });
 
     // Delete
     window.deleteEvent = async (id) => {
