@@ -4,7 +4,6 @@
 // // Initialize Firebase Admin
 // if (!admin.apps.length) {
 //   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
 //   admin.initializeApp({
 //     credential: admin.credential.cert(serviceAccount),
 //     databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
@@ -12,24 +11,24 @@
 // }
 
 // const db = admin.database();
-// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // Your platform secret key
 
 // exports.handler = async function(event, context) {
 //   try {
-//     const { eventId, tickets, totalAmount } = JSON.parse(event.body);
+//     const { eventId, tickets, totalAmount, userId, bookingId } = JSON.parse(event.body);
 
 //     // Fetch event details
-//     const eventSnapshot = await db.ref(`events/${eventId}`).once("value");
-//     if (!eventSnapshot.exists()) {
+//     const snapshot = await db.ref(`events/${eventId}`).once("value");
+//     if (!snapshot.exists())
 //       return { statusCode: 400, body: JSON.stringify({ error: "Event not found" }) };
-//     }
-//     const eventData = eventSnapshot.val();
 
-//     if (tickets > eventData.tickets) {
-//       return { statusCode: 400, body: JSON.stringify({ error: "Not enough tickets left" }) };
-//     }
+//     const eventData = snapshot.val();
+//     if (!eventData.stripeAccountId)
+//       return { statusCode: 400, body: JSON.stringify({ error: "Merchant not linked" }) };
 
-//     const bookingId = "BK" + Date.now();
+//     const connectedAccountId = eventData.stripeAccountId;
+//     const platformFee = Math.round(totalAmount * 0.1 * 100); // 10% platform fee in cents
+//     const pricePerTicket = totalAmount / tickets;
 
 //     // Save booking in Firebase
 //     await db.ref(`bookings/${bookingId}`).set({
@@ -40,76 +39,18 @@
 //       totalAmount,
 //       image: eventData.imageUrl || "",
 //       status: "pending",
+//       bookedBy: userId,   // Current user UID
 //       createdAt: new Date().toISOString()
 //     });
 
-//     // Create Stripe checkout session
-//     const session = await stripe.checkout.sessions.create({
-//       payment_method_types: ["card"],
-//       line_items: [
-//         {
-//           price_data: {
-//             currency: "usd",
-//             product_data: { name: eventData.name },
-//             unit_amount: totalAmount * 100
-//           },
-//           quantity: tickets
-//         }
-//       ],
-//       mode: "payment",
-//       success_url: `https://preethievents.netlify.app/success.html?bookingId=${bookingId}`,
-//       cancel_url: `https://preethievents.netlify.app/cancel.html`,
-//       metadata: {
-//     bookingId: bookingId
-//   }
-//     });
-
-//     return { statusCode: 200, body: JSON.stringify({ url: session.url }) };
-
-//   } catch (err) {
-//     console.error(err);
-//     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
-//   }
-// };
-
-// const Stripe = require("stripe");
-// const admin = require("firebase-admin");
-
-// if (!admin.apps.length) {
-//   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-//   admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount),
-//     databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
-//   });
-// }
-
-// const db = admin.database();
-// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // Rohan's platform key
-
-// exports.handler = async function(event, context) {
-//   try {
-//     const { eventId, tickets, totalAmount, bookingId } = JSON.parse(event.body);
-//     const snapshot = await db.ref(`events/${eventId}`).once("value");
-//     if (!snapshot.exists()) 
-//       return { statusCode: 400, body: JSON.stringify({ error: "Event not found" }) };
-
-//     const eventData = snapshot.val();
-//     if (!eventData.stripeAccountId) 
-//       return { statusCode: 400, body: JSON.stringify({ error: "Merchant not linked" }) };
-
-//     const connectedAccountId = eventData.stripeAccountId;
-//     const platformFee = Math.round(totalAmount * 0.1 * 100); // 10% platform fee in cents
-
-//     // Calculate per-ticket price
-//     const pricePerTicket = totalAmount / tickets;
-
+//     // Create Stripe Checkout Session
 //     const session = await stripe.checkout.sessions.create({
 //       payment_method_types: ["card"],
 //       line_items: [{
 //         price_data: {
 //           currency: "usd",
 //           product_data: { name: eventData.name },
-//           unit_amount: Math.round(pricePerTicket * 100) // cents
+//           unit_amount: Math.round(pricePerTicket * 100) // convert to cents
 //         },
 //         quantity: tickets
 //       }],
@@ -118,19 +59,18 @@
 //       cancel_url: `https://preethievents.netlify.app/cancel.html`,
 //       metadata: { bookingId },
 //       payment_intent_data: {
-//         application_fee_amount: platformFee,
-//         transfer_data: { destination: connectedAccountId }
+//         application_fee_amount: platformFee,   // platform fee
+//         transfer_data: { destination: connectedAccountId } // merchant gets remainder
 //       }
 //     });
 
 //     return { statusCode: 200, body: JSON.stringify({ url: session.url }) };
 
-//   } catch (err) {
+//   } catch(err) {
 //     console.error(err);
 //     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
 //   }
 // };
-
 
 const Stripe = require("stripe");
 const admin = require("firebase-admin");
@@ -145,7 +85,7 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // Your platform secret key
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async function(event, context) {
   try {
@@ -155,16 +95,19 @@ exports.handler = async function(event, context) {
     const snapshot = await db.ref(`events/${eventId}`).once("value");
     if (!snapshot.exists())
       return { statusCode: 400, body: JSON.stringify({ error: "Event not found" }) };
-
     const eventData = snapshot.val();
     if (!eventData.stripeAccountId)
       return { statusCode: 400, body: JSON.stringify({ error: "Merchant not linked" }) };
 
     const connectedAccountId = eventData.stripeAccountId;
-    const platformFee = Math.round(totalAmount * 0.1 * 100); // 10% platform fee in cents
+    const platformFee = Math.round(totalAmount * 0.1 * 100);
     const pricePerTicket = totalAmount / tickets;
 
-    // Save booking in Firebase
+    // Fetch user details from Firebase Auth
+    const userRecord = await admin.auth().getUser(userId);
+    const userName = userRecord.displayName || userRecord.email;
+
+    // Save booking in Firebase with username
     await db.ref(`bookings/${bookingId}`).set({
       bookingId,
       eventId,
@@ -173,7 +116,7 @@ exports.handler = async function(event, context) {
       totalAmount,
       image: eventData.imageUrl || "",
       status: "pending",
-      bookedBy: userId,   // Current user UID
+      bookedBy: userName,  // <-- store username/email here
       createdAt: new Date().toISOString()
     });
 
@@ -184,7 +127,7 @@ exports.handler = async function(event, context) {
         price_data: {
           currency: "usd",
           product_data: { name: eventData.name },
-          unit_amount: Math.round(pricePerTicket * 100) // convert to cents
+          unit_amount: Math.round(pricePerTicket * 100)
         },
         quantity: tickets
       }],
@@ -193,8 +136,8 @@ exports.handler = async function(event, context) {
       cancel_url: `https://preethievents.netlify.app/cancel.html`,
       metadata: { bookingId },
       payment_intent_data: {
-        application_fee_amount: platformFee,   // platform fee
-        transfer_data: { destination: connectedAccountId } // merchant gets remainder
+        application_fee_amount: platformFee,
+        transfer_data: { destination: connectedAccountId }
       }
     });
 
