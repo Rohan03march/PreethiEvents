@@ -187,6 +187,8 @@
    // Add Event
 document.getElementById("addEventForm").addEventListener("submit", async e => {
   e.preventDefault();
+
+  // Collect all input values
   const name = eventName.value;
   const dateTime = eventDateTime.value;
   const description = eventDescription.value;
@@ -197,6 +199,7 @@ document.getElementById("addEventForm").addEventListener("submit", async e => {
   if (!imageFile) return alert("Select an image");
 
   try {
+    // Upload image to Cloudinary
     const formData = new FormData();
     formData.append("file", imageFile);
     formData.append("upload_preset", "EventBooking");
@@ -209,6 +212,7 @@ document.getElementById("addEventForm").addEventListener("submit", async e => {
     const data = await res.json();
     const imageUrl = data.secure_url;
 
+    // Create new event in Firebase
     const newEventRef = push(ref(database, "events/"));
     await set(newEventRef, { 
       name,
