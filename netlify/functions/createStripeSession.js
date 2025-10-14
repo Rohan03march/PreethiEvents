@@ -11,7 +11,7 @@
 // }
 
 // const db = admin.database();
-// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // Your platform secret key
 
 // exports.handler = async function(event, context) {
 //   try {
@@ -21,19 +21,16 @@
 //     const snapshot = await db.ref(`events/${eventId}`).once("value");
 //     if (!snapshot.exists())
 //       return { statusCode: 400, body: JSON.stringify({ error: "Event not found" }) };
+
 //     const eventData = snapshot.val();
 //     if (!eventData.stripeAccountId)
 //       return { statusCode: 400, body: JSON.stringify({ error: "Merchant not linked" }) };
 
 //     const connectedAccountId = eventData.stripeAccountId;
-//     const platformFee = Math.round(totalAmount * 0.1 * 100);
+//     const platformFee = Math.round(totalAmount * 0.1 * 100); // 10% platform fee in cents
 //     const pricePerTicket = totalAmount / tickets;
 
-//     // Fetch user details from Firebase Auth
-//     const userRecord = await admin.auth().getUser(userId);
-//     const userName = userRecord.displayName || userRecord.email;
-
-//     // Save booking in Firebase with username
+//     // Save booking in Firebase
 //     await db.ref(`bookings/${bookingId}`).set({
 //       bookingId,
 //       eventId,
@@ -42,7 +39,7 @@
 //       totalAmount,
 //       image: eventData.imageUrl || "",
 //       status: "pending",
-//       bookedBy: userName,  // <-- store username/email here
+//       bookedBy: userId,   // Current user UID
 //       createdAt: new Date().toISOString()
 //     });
 
@@ -53,7 +50,7 @@
 //         price_data: {
 //           currency: "usd",
 //           product_data: { name: eventData.name },
-//           unit_amount: Math.round(pricePerTicket * 100)
+//           unit_amount: Math.round(pricePerTicket * 100) // convert to cents
 //         },
 //         quantity: tickets
 //       }],
@@ -62,8 +59,8 @@
 //       cancel_url: `https://preethievents.netlify.app/cancel.html`,
 //       metadata: { bookingId },
 //       payment_intent_data: {
-//         application_fee_amount: platformFee,
-//         transfer_data: { destination: connectedAccountId }
+//         application_fee_amount: platformFee,   // platform fee
+//         transfer_data: { destination: connectedAccountId } // merchant gets remainder
 //       }
 //     });
 
@@ -74,7 +71,6 @@
 //     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
 //   }
 // };
-
 
 const Stripe = require("stripe");
 const admin = require("firebase-admin");
@@ -152,4 +148,3 @@ exports.handler = async function(event, context) {
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
-
