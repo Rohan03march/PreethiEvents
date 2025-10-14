@@ -76,7 +76,6 @@
 // };
 
 
-
 const Stripe = require("stripe");
 const admin = require("firebase-admin");
 
@@ -96,17 +95,6 @@ exports.handler = async function(event, context) {
   try {
     const { eventId, tickets, totalAmount, userId, bookingId } = JSON.parse(event.body);
 
-    // Check if booking already exists
-    const bookingSnapshot = await db.ref(`bookings/${bookingId}`).once("value");
-    if (bookingSnapshot.exists()) {
-      const existingBooking = bookingSnapshot.val();
-      if (existingBooking.paymentIntentId) {
-        const paymentIntent = await stripe.paymentIntents.retrieve(existingBooking.paymentIntentId);
-        const status = paymentIntent.status === "succeeded" ? "paid" : "pending";
-        return { statusCode: 200, body: JSON.stringify({ status, url: existingBooking.checkoutUrl || null }) };
-      }
-    }
-
     // Fetch event details
     const snapshot = await db.ref(`events/${eventId}`).once("value");
     if (!snapshot.exists())
@@ -122,6 +110,19 @@ exports.handler = async function(event, context) {
     // Fetch user details from Firebase Auth
     const userRecord = await admin.auth().getUser(userId);
     const userName = userRecord.displayName || userRecord.email;
+
+    // Save booking in Firebase with username
+    await db.ref(`bookings/${bookingId}`).set({
+      bookingId,
+      eventId,
+      eventName: eventData.name,
+      tickets,
+      totalAmount,
+      image: eventData.imageUrl || "",
+      status: "pending",
+      bookedBy: userName,  // <-- store username/email here
+      createdAt: new Date().toISOString()
+    });
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
@@ -144,22 +145,7 @@ exports.handler = async function(event, context) {
       }
     });
 
-    // Save booking in Firebase
-    await db.ref(`bookings/${bookingId}`).set({
-      bookingId,
-      eventId,
-      eventName: eventData.name,
-      tickets,
-      totalAmount,
-      image: eventData.imageUrl || "",
-      status: "pending",
-      bookedBy: userName,
-      paymentIntentId: session.payment_intent,
-      checkoutUrl: session.url,
-      createdAt: new Date().toISOString()
-    });
-
-    return { statusCode: 200, body: JSON.stringify({ status: "pending", url: session.url }) };
+    return { statusCode: 200, body: JSON.stringify({ url: session.url }) };
 
   } catch(err) {
     console.error(err);
