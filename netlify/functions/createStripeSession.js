@@ -135,6 +135,7 @@
 const Stripe = require("stripe");
 const admin = require("firebase-admin");
 
+// Initialize Firebase Admin
 if (!admin.apps.length) {
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   admin.initializeApp({
@@ -144,24 +145,26 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // Your platform secret key
 
 exports.handler = async function(event, context) {
   try {
-    const { eventId, tickets, totalAmount, userId } = JSON.parse(event.body); // include userId from frontend
+    const { eventId, tickets, totalAmount, userId, bookingId } = JSON.parse(event.body);
 
     // Fetch event details
     const snapshot = await db.ref(`events/${eventId}`).once("value");
-    if (!snapshot.exists()) 
+    if (!snapshot.exists())
       return { statusCode: 400, body: JSON.stringify({ error: "Event not found" }) };
 
     const eventData = snapshot.val();
-    if (!eventData.stripeAccountId) 
+    if (!eventData.stripeAccountId)
       return { statusCode: 400, body: JSON.stringify({ error: "Merchant not linked" }) };
 
-    const bookingId = "BK" + Date.now();
+    const connectedAccountId = eventData.stripeAccountId;
+    const platformFee = Math.round(totalAmount * 0.1 * 100); // 10% platform fee in cents
+    const pricePerTicket = totalAmount / tickets;
 
-    // Store booking in Firebase with userId
+    // Save booking in Firebase
     await db.ref(`bookings/${bookingId}`).set({
       bookingId,
       eventId,
@@ -170,22 +173,18 @@ exports.handler = async function(event, context) {
       totalAmount,
       image: eventData.imageUrl || "",
       status: "pending",
-      bookedBy: userId,       // <--- store the user who booked
+      bookedBy: userId,   // Current user UID
       createdAt: new Date().toISOString()
     });
 
-    const connectedAccountId = eventData.stripeAccountId;
-    const platformFee = Math.round(totalAmount * 0.1 * 100);
-    const pricePerTicket = totalAmount / tickets;
-
-    // Create Stripe checkout session
+    // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [{
         price_data: {
           currency: "usd",
           product_data: { name: eventData.name },
-          unit_amount: Math.round(pricePerTicket * 100)
+          unit_amount: Math.round(pricePerTicket * 100) // convert to cents
         },
         quantity: tickets
       }],
@@ -194,14 +193,14 @@ exports.handler = async function(event, context) {
       cancel_url: `https://preethievents.netlify.app/cancel.html`,
       metadata: { bookingId },
       payment_intent_data: {
-        application_fee_amount: platformFee,
-        transfer_data: { destination: connectedAccountId }
+        application_fee_amount: platformFee,   // platform fee
+        transfer_data: { destination: connectedAccountId } // merchant gets remainder
       }
     });
 
     return { statusCode: 200, body: JSON.stringify({ url: session.url }) };
 
-  } catch (err) {
+  } catch(err) {
     console.error(err);
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
