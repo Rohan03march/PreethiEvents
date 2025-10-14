@@ -184,34 +184,53 @@
     eventImageInput.addEventListener("change", e => { const f = e.target.files[0]; if (f && f.type.startsWith("image/")) previewImage(f); });
     function previewImage(file) { const reader = new FileReader(); reader.onload = e => { previewContainer.style.display = "block"; imagePreview.src = e.target.result; }; reader.readAsDataURL(file); }
 
-    // Add Event
-    document.getElementById("addEventForm").addEventListener("submit", async e => {
-      e.preventDefault();
-      const name = eventName.value;
-      const dateTime = eventDateTime.value;
-      const description = eventDescription.value;
-      const cost = eventCost.value;
-      const tickets = eventTickets.value || null;
-      const imageFile = eventImage.files[0];
-      if (!imageFile) return alert("Select an image");
+   // Add Event
+document.getElementById("addEventForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const name = eventName.value;
+  const dateTime = eventDateTime.value;
+  const description = eventDescription.value;
+  const cost = eventCost.value;
+  const tickets = eventTickets.value || null;
+  const imageFile = eventImage.files[0];
 
-      try {
-        const formData = new FormData();
-        formData.append("file", imageFile);
-        formData.append("upload_preset", "EventBooking");
-        formData.append("folder", "events");
-        const res = await fetch(`https://api.cloudinary.com/v1_1/djtmeloko/image/upload`, { method: "POST", body: formData });
-        const data = await res.json();
-        const imageUrl = data.secure_url;
+  if (!imageFile) return alert("Select an image");
 
-        const newEventRef = push(ref(database, "events/"));
-        await set(newEventRef, { name, dateTime, description, cost: Number(cost), tickets: tickets ? Number(tickets) : null, imageUrl, createdBy: auth.currentUser.uid, createdAt: new Date().toISOString() });
+  try {
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("upload_preset", "EventBooking");
+    formData.append("folder", "events");
 
-        alert("Event created successfully!");
-        e.target.reset();
-        previewContainer.style.display = "none";
-      } catch (err) { console.error(err); alert("Failed to create event."); }
+    const res = await fetch(`https://api.cloudinary.com/v1_1/djtmeloko/image/upload`, { 
+      method: "POST", 
+      body: formData 
     });
+    const data = await res.json();
+    const imageUrl = data.secure_url;
+
+    const newEventRef = push(ref(database, "events/"));
+    await set(newEventRef, { 
+      name,
+      dateTime,
+      description,
+      cost: Number(cost),
+      tickets: tickets ? Number(tickets) : null,
+      imageUrl,
+      stripeAccountId: "acct_1SI2NnIzm242HFji", // <-- default merchant Stripe ID
+      createdBy: auth.currentUser.uid,
+      createdAt: new Date().toISOString()
+    });
+
+    alert("Event created successfully!");
+    e.target.reset();
+    previewContainer.style.display = "none";
+  } catch (err) { 
+    console.error(err); 
+    alert("Failed to create event."); 
+  }
+});
+
 
     // Load Events
     async function loadEvents() {
