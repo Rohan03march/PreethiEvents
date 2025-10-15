@@ -117,6 +117,7 @@ exports.handler = async function(event, context) {
       image: eventData.imageUrl || "",
       status: "pending",
       bookedBy: userName,  // <-- store username/email here
+      bookedById : userId,
       createdAt: new Date().toISOString()
     });
 
