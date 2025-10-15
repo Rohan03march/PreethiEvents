@@ -7,10 +7,16 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
+  <!-- QRCode.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
   <style>
     body {
-      background: #f4f5f9;
+      background: #f0f2f5;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    h1 {
+      margin-top: 30px;
     }
     .tickets-container {
       display: flex;
@@ -21,23 +27,31 @@
     }
     .ticket-card {
       background: #fff;
-      width: 300px;
+      width: 320px;
       border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
       overflow: hidden;
       position: relative;
       transition: transform 0.3s;
+      display: flex;
+      flex-direction: column;
+      border-top: 4px solid #6c63ff;
     }
     .ticket-card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-8px);
     }
-    .ticket-card img {
+    .ticket-image {
       width: 100%;
       height: 180px;
       object-fit: cover;
+      border-bottom: 1px dashed #ccc;
     }
     .ticket-info {
       padding: 20px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .ticket-info p {
       margin: 6px 0;
@@ -54,34 +68,51 @@
       color: #ffb300;
       font-weight: 600;
     }
-    .ticket-barcode {
-      height: 60px;
-      background: repeating-linear-gradient(
-        90deg,
-        #000,
-        #000 2px,
-        #fff 2px,
-        #fff 6px
-      );
-      margin-top: 10px;
-      border-radius: 0 0 16px 16px;
+    .ticket-footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f7f7f7;
+      height: 120px;
+      position: relative;
+      border-top: 1px dashed #ccc;
     }
+    .ticket-qr {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .ticket-cutout-left,
+    .ticket-cutout-right {
+      position: absolute;
+      top: -8px;
+      width: 16px;
+      height: 16px;
+      background: #f0f2f5;
+      border-radius: 50%;
+      z-index: 2;
+    }
+    .ticket-cutout-left { left: -8px; }
+    .ticket-cutout-right { right: -8px; }
     .no-booking {
       text-align: center;
       font-size: 18px;
       color: #888;
       margin-top: 50px;
     }
+    @media (max-width: 768px) {
+      .ticket-card { width: 90%; }
+    }
   </style>
 </head>
 <body>
 
-  <h1 class="text-center my-4">My Bookings</h1>
+  <h1 class="text-center">My Bookings</h1>
   <div class="tickets-container" id="ticketsContainer">
-    <!-- Tickets will be appended here -->
+    <!-- Tickets will appear here -->
   </div>
 
-  <script type="module" src="js/tickets.js"></script>
+ <script type="module" src="js/tickets.js"></script>
 
 </body>
 </html>
