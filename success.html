@@ -3,41 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Payment Success | Preethi Events</title>
+    <title>Payment Successful | Preethi Events</title>
 
-    <!-- Google Fonts & Styling -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <!-- Google Fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
       rel="stylesheet"
     />
 
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #f9f9ff 0%, #f2f6ff 100%);
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
         margin: 0;
-        background: #f7f8fc;
+        padding: 20px;
       }
 
       .card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-        padding: 40px;
-        max-width: 400px;
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        padding: 40px 35px;
+        max-width: 420px;
         width: 100%;
         text-align: center;
-        animation: fadeIn 0.6s ease-in-out;
+        animation: fadeInUp 0.7s ease-in-out;
+        position: relative;
+        overflow: hidden;
       }
 
-      @keyframes fadeIn {
+      @keyframes fadeInUp {
         from {
           opacity: 0;
-          transform: translateY(20px);
+          transform: translateY(40px);
         }
         to {
           opacity: 1;
@@ -45,35 +51,76 @@
         }
       }
 
+      .card::before {
+        content: "";
+        position: absolute;
+        top: -100px;
+        right: -100px;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle at center, #4caf50 0%, transparent 70%);
+        opacity: 0.1;
+      }
+
       .success-icon {
-        font-size: 60px;
+        font-size: 70px;
         color: #4caf50;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
+        animation: pop 0.4s ease;
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0.5);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
       }
 
       h2 {
         margin: 0;
-        color: #333;
+        color: #222;
+        font-weight: 600;
       }
 
       p {
-        color: #555;
-        margin: 10px 0 20px;
+        color: #666;
+        margin: 10px 0 25px;
+        font-size: 15px;
       }
 
       img {
         width: 100%;
-        border-radius: 10px;
-        margin-bottom: 15px;
+        border-radius: 12px;
+        margin: 15px 0;
+        object-fit: cover;
       }
 
       .info {
         text-align: left;
         font-size: 14px;
-        background: #f4f4f9;
-        padding: 10px;
-        border-radius: 10px;
+        background: #f8f9fd;
+        padding: 15px;
+        border-radius: 12px;
         margin-top: 15px;
+        border: 1px solid #eee;
+      }
+
+      .info p {
+        margin: 8px 0;
+      }
+
+      .status-paid {
+        color: #22c55e;
+        font-weight: 600;
+      }
+
+      .status-pending {
+        color: #f59e0b;
+        font-weight: 600;
       }
 
       .home-btn {
@@ -84,11 +131,33 @@
         text-decoration: none;
         font-weight: 600;
         display: inline-block;
-        transition: 0.2s ease;
+        margin-top: 25px;
+        transition: 0.25s ease;
       }
 
       .home-btn:hover {
-        background: #45a049;
+        background: #43a047;
+        transform: translateY(-2px);
+      }
+
+      .brand {
+        font-size: 13px;
+        color: #aaa;
+        margin-top: 20px;
+      }
+
+      @media (max-width: 480px) {
+        .card {
+          padding: 30px 20px;
+        }
+
+        .success-icon {
+          font-size: 55px;
+        }
+
+        h2 {
+          font-size: 22px;
+        }
       }
     </style>
   </head>
@@ -96,19 +165,20 @@
     <div class="card">
       <div class="success-icon">✅</div>
       <h2>Payment Successful!</h2>
-      <p>Your booking is confirmed.</p>
+      <p>Thank you for booking with <strong>Preethi Events</strong>.</p>
 
       <div id="eventDetails">
-        <p>Loading booking details...</p>
+        <p>Loading your booking details...</p>
       </div>
 
       <a href="index.html" class="home-btn">Back to Home</a>
+      <div class="brand">© 2025 Preethi Events</div>
     </div>
 
-    <!-- Firebase -->
+    <!-- Firebase Script -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-      import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+      import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyA3ChaO6pXKubN4WeVffJK5q0tPmpT1XEc",
@@ -117,16 +187,14 @@
         projectId: "partybooking-ecdf1",
         storageBucket: "partybooking-ecdf1.appspot.com",
         messagingSenderId: "119112973933",
-        appId: "1:119112973933:web:87037ff1b10958bb118964"
+        appId: "1:119112973933:web:87037ff1b10958bb118964",
       };
 
       const app = initializeApp(firebaseConfig);
       const db = getDatabase(app);
 
-      // Get bookingId from URL
       const urlParams = new URLSearchParams(window.location.search);
       const bookingId = urlParams.get("bookingId");
-
       const eventDetailsDiv = document.getElementById("eventDetails");
 
       if (bookingId) {
@@ -143,8 +211,8 @@
                 <p><strong>Total Amount:</strong> $${data.totalAmount}</p>
                 <p><strong>Status:</strong> ${
                   data.status === "paid"
-                    ? '<span style="color:green;font-weight:600;">Paid</span>'
-                    : '<span style="color:orange;font-weight:600;">Pending</span>'
+                    ? '<span class="status-paid">Paid</span>'
+                    : '<span class="status-pending">Pending</span>'
                 }</p>
                 <p><strong>Booking ID:</strong> ${data.bookingId}</p>
               </div>
