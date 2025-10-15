@@ -41,28 +41,30 @@
                 <div class="ticket-cutout-right"></div>
                 ${booking.image ? `<img src="${booking.image}" alt="Event Image" class="ticket-image">` : ""}
                 <div class="ticket-info">
+                <div id="qrcode-${booking.bookingId}" class="ticket-qr"></div>
                   <p><strong>Event:</strong> ${booking.eventName || "N/A"}</p>
                   <p><strong>Tickets:</strong> ${booking.tickets || 0}</p>
                   <p><strong>Total Amount:</strong> $${booking.totalAmount || 0}</p>
                   <p><strong>Status:</strong> <span class="${statusClass}">${booking.status ? booking.status.toUpperCase() : "PENDING"}</span></p>
-                  <p><strong>Booking ID:</strong> ${booking.bookingId || bookingId}</p>
                   <p><strong>Booked By:</strong> ${booking.bookedBy || "N/A"}</p>
                 </div>
                 <div class="ticket-footer">
-                  <div id="qrcode-${booking.bookingId}" class="ticket-qr"></div>
+                  <p><strong>Booking ID:</strong> ${booking.bookingId || bookingId}</p>
                 </div>
               `;
               ticketsContainer.appendChild(ticketCard);
 
               // Generate QR code for booking
-              new QRCode(document.getElementById(`qrcode-${booking.bookingId}`), {
-                text: `https://preethievents.netlify.app/verify.html?bookingId=${booking.bookingId}`,
-                width: 100,
-                height: 100,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-              });
+              // Generate QR code with only booking ID
+new QRCode(document.getElementById(`qrcode-${booking.bookingId}`), {
+  text: booking.bookingId,   // only the booking ID
+  width: 100,
+  height: 100,
+  colorDark: "#000000",
+  colorLight: "#ffffff",
+  correctLevel: QRCode.CorrectLevel.H
+});
+
             }
           } else {
             ticketsContainer.innerHTML = `<p class="no-booking">No bookings found.</p>`;
