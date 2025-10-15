@@ -93,7 +93,7 @@ onAuthStateChanged(auth, user => {
                     Hi, ${name}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><a class="dropdown-item" href="my-bookings.html">My Bookings</a></li>
+                    <li><a class="dropdown-item" href="Mybooking.html">My Bookings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
                 </ul>
