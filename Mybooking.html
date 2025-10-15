@@ -82,65 +82,68 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyA3ChaO6pXKubN4WeVffJK5q0tPmpT1XEc",
-      authDomain: "partybooking-ecdf1.firebaseapp.com",
-      databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
-      projectId: "partybooking-ecdf1",
-      storageBucket: "partybooking-ecdf1.appspot.com",
-      messagingSenderId: "119112973933",
-      appId: "1:119112973933:web:87037ff1b10958bb118964",
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyA3ChaO6pXKubN4WeVffJK5q0tPmpT1XEc",
+  authDomain: "partybooking-ecdf1.firebaseapp.com",
+  databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
+  projectId: "partybooking-ecdf1",
+  storageBucket: "partybooking-ecdf1.appspot.com",
+  messagingSenderId: "119112973933",
+  appId: "1:119112973933:web:87037ff1b10958bb118964",
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-    const ticketsContainer = document.getElementById("ticketsContainer");
+const ticketsContainer = document.getElementById("ticketsContainer");
 
-    // Fetch bookings for logged-in user
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        const bookingsRef = ref(db, "bookings/");
-        get(bookingsRef).then(snapshot => {
-          const data = snapshot.val();
-          let hasBooking = false;
+auth.onAuthStateChanged(user => {
+  if (user) {
+    // Create a query to fetch only bookings where bookedById === current user UID
+    const bookingsQuery = query(ref(db, "bookings"), orderByChild("bookedById"), equalTo(user.uid));
 
-          for (let bookingId in data) {
-            const booking = data[bookingId];
-            if (booking.userId === user.uid) { // Only show bookings for this user
-              hasBooking = true;
-              const statusClass = booking.status === "paid" ? "ticket-status-paid" : "ticket-status-pending";
+    get(bookingsQuery).then(snapshot => {
+      const data = snapshot.val();
+      ticketsContainer.innerHTML = ""; // Clear container
+      if (data) {
+        for (let bookingId in data) {
+          const booking = data[bookingId];
+          const statusClass = booking.status === "paid" ? "ticket-status-paid" : "ticket-status-pending";
 
-              const ticketCard = document.createElement("div");
-              ticketCard.classList.add("ticket-card");
-              ticketCard.innerHTML = `
-                ${booking.image ? `<img src="${booking.image}" alt="Event Image">` : ""}
-                <div class="ticket-info">
-                  <p><strong>Event:</strong> ${booking.eventName}</p>
-                  <p><strong>Tickets:</strong> ${booking.tickets}</p>
-                  <p><strong>Total Amount:</strong> $${booking.totalAmount}</p>
-                  <p><strong>Status:</strong> <span class="${statusClass}">${booking.status.toUpperCase()}</span></p>
-                  <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
-                </div>
-                <div class="ticket-barcode"></div>
-              `;
-              ticketsContainer.appendChild(ticketCard);
-            }
-          }
-
-          if (!hasBooking) {
-            ticketsContainer.innerHTML = `<p class="no-booking">No bookings found.</p>`;
-          }
-        });
+          const ticketCard = document.createElement("div");
+          ticketCard.classList.add("ticket-card");
+          ticketCard.innerHTML = `
+            ${booking.image ? `<img src="${booking.image}" alt="Event Image">` : ""}
+            <div class="ticket-info">
+              <p><strong>Event:</strong> ${booking.eventName}</p>
+              <p><strong>Tickets:</strong> ${booking.tickets}</p>
+              <p><strong>Total Amount:</strong> $${booking.totalAmount}</p>
+              <p><strong>Status:</strong> <span class="${statusClass}">${booking.status.toUpperCase()}</span></p>
+              <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
+              <p><strong>Booked By:</strong> ${booking.bookedBy}</p>
+            </div>
+            <div class="ticket-barcode"></div>
+          `;
+          ticketsContainer.appendChild(ticketCard);
+        }
       } else {
-        ticketsContainer.innerHTML = `<p class="no-booking">Please log in to see your bookings.</p>`;
+        ticketsContainer.innerHTML = `<p class="no-booking">No bookings found.</p>`;
       }
+    }).catch(err => {
+      console.error(err);
+      ticketsContainer.innerHTML = `<p class="no-booking">Error loading bookings.</p>`;
     });
-  </script>
+
+  } else {
+    ticketsContainer.innerHTML = `<p class="no-booking">Please log in to see your bookings.</p>`;
+  }
+});
+</script>
+
 </body>
 </html>
