@@ -1,6 +1,5 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-    import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA3ChaO6pXKubN4WeVffJK5q0tPmpT1XEc",
@@ -13,63 +12,39 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getDatabase(app);
-    const ticketsContainer = document.getElementById("ticketsContainer");
 
-    auth.onAuthStateChanged(user => {
-      if (!user) {
-        ticketsContainer.innerHTML = `<p class="no-booking">Please log in to see your bookings.</p>`;
-        return;
-      }
+    // Get bookingId from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookingId = urlParams.get("bookingId");
 
-      const bookingsQuery = query(ref(db, "bookings"), orderByChild("bookedById"), equalTo(user.uid));
+    const statusEl = document.getElementById("bookingStatus");
+    const detailsEl = document.getElementById("bookingDetails");
 
-      get(bookingsQuery)
-        .then(snapshot => {
-          const data = snapshot.val();
-          ticketsContainer.innerHTML = "";
-          if (data) {
-            for (let bookingId in data) {
-              const booking = data[bookingId];
-              const statusClass = booking.status === "paid" ? "ticket-status-paid" : "ticket-status-pending";
+    if (bookingId) {
+      get(ref(db, `bookings/${bookingId}`)).then(snapshot => {
+        const booking = snapshot.val();
+        if (booking) {
+          const statusClass = booking.status === "paid" ? "status-paid" : "status-pending";
+          statusEl.textContent = `Booking Status: ${booking.status.toUpperCase()}`;
+          statusEl.className = statusClass;
 
-              const ticketCard = document.createElement("div");
-              ticketCard.classList.add("ticket-card");
-              ticketCard.innerHTML = `
-                <div class="ticket-cutout-left"></div>
-                <div class="ticket-cutout-right"></div>
-                ${booking.image ? `<img src="${booking.image}" alt="Event Image" class="ticket-image">` : ""}
-                <div class="ticket-info">
-                  <p><strong>Event:</strong> ${booking.eventName || "N/A"}</p>
-                  <p><strong>Tickets:</strong> ${booking.tickets || 0}</p>
-                  <p><strong>Total Amount:</strong> $${booking.totalAmount || 0}</p>
-                  <p><strong>Status:</strong> <span class="${statusClass}">${booking.status ? booking.status.toUpperCase() : "PENDING"}</span></p>
-                  <p><strong>Booking ID:</strong> ${booking.bookingId || bookingId}</p>
-                  <p><strong>Booked By:</strong> ${booking.bookedBy || "N/A"}</p>
-                </div>
-                <div class="ticket-footer">
-                  <div id="qrcode-${booking.bookingId}" class="ticket-qr"></div>
-                </div>
-              `;
-              ticketsContainer.appendChild(ticketCard);
-
-              // Generate QR code for booking
-              new QRCode(document.getElementById(`qrcode-${booking.bookingId}`), {
-                text: `https://preethievents.netlify.app/verify.html?bookingId=${booking.bookingId}`,
-                width: 100,
-                height: 100,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-              });
-            }
-          } else {
-            ticketsContainer.innerHTML = `<p class="no-booking">No bookings found.</p>`;
-          }
-        })
-        .catch(err => {
-          console.error("Firebase fetch error:", err);
-          ticketsContainer.innerHTML = `<p class="no-booking">Error loading bookings. See console for details.</p>`;
-        });
-    });
+          detailsEl.innerHTML = `
+            <p><strong>Event:</strong> ${booking.eventName}</p>
+            <p><strong>Tickets:</strong> ${booking.tickets}</p>
+            <p><strong>Total Amount:</strong> $${booking.totalAmount}</p>
+            <p><strong>Booked By:</strong> ${booking.bookedBy}</p>
+          `;
+        } else {
+          statusEl.textContent = "Invalid Booking";
+          statusEl.className = "status-invalid";
+        }
+      }).catch(err => {
+        statusEl.textContent = "Error checking booking";
+        statusEl.className = "status-invalid";
+        console.error(err);
+      });
+    } else {
+      statusEl.textContent = "No booking ID provided";
+      statusEl.className = "status-invalid";
+    }
