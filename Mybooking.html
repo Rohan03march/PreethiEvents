@@ -1,17 +1,146 @@
-<script>
-    const firebaseConfig = {
-  apiKey: "AIzaSyA3ChaO6pXKubN4WeVffJK5q0tPmpT1XEc",
-  authDomain: "partybooking-ecdf1.firebaseapp.com",
-  databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
-  projectId: "partybooking-ecdf1",
-  storageBucket: "partybooking-ecdf1.appspot.com",
-  messagingSenderId: "119112973933",
-  appId: "1:119112973933:web:87037ff1b10958bb118964",
-};
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bookings</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-// ----------------------------
-// 3. Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app);
-</script>
+  <style>
+    body {
+      background: #f4f5f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .tickets-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .ticket-card {
+      background: #fff;
+      width: 300px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.3s;
+    }
+    .ticket-card:hover {
+      transform: translateY(-5px);
+    }
+    .ticket-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+    .ticket-info {
+      padding: 20px;
+    }
+    .ticket-info p {
+      margin: 6px 0;
+      font-size: 14px;
+    }
+    .ticket-info p strong {
+      color: #333;
+    }
+    .ticket-status-paid {
+      color: #00e676;
+      font-weight: 600;
+    }
+    .ticket-status-pending {
+      color: #ffb300;
+      font-weight: 600;
+    }
+    .ticket-barcode {
+      height: 60px;
+      background: repeating-linear-gradient(
+        90deg,
+        #000,
+        #000 2px,
+        #fff 2px,
+        #fff 6px
+      );
+      margin-top: 10px;
+      border-radius: 0 0 16px 16px;
+    }
+    .no-booking {
+      text-align: center;
+      font-size: 18px;
+      color: #888;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="text-center my-4">My Bookings</h1>
+  <div class="tickets-container" id="ticketsContainer">
+    <!-- Tickets will be appended here -->
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA3ChaO6pXKubN4WeVffJK5q0tPmpT1XEc",
+      authDomain: "partybooking-ecdf1.firebaseapp.com",
+      databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
+      projectId: "partybooking-ecdf1",
+      storageBucket: "partybooking-ecdf1.appspot.com",
+      messagingSenderId: "119112973933",
+      appId: "1:119112973933:web:87037ff1b10958bb118964",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const ticketsContainer = document.getElementById("ticketsContainer");
+
+    // Fetch bookings for logged-in user
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const bookingsRef = ref(db, "bookings/");
+        get(bookingsRef).then(snapshot => {
+          const data = snapshot.val();
+          let hasBooking = false;
+
+          for (let bookingId in data) {
+            const booking = data[bookingId];
+            if (booking.userId === user.uid) { // Only show bookings for this user
+              hasBooking = true;
+              const statusClass = booking.status === "paid" ? "ticket-status-paid" : "ticket-status-pending";
+
+              const ticketCard = document.createElement("div");
+              ticketCard.classList.add("ticket-card");
+              ticketCard.innerHTML = `
+                ${booking.image ? `<img src="${booking.image}" alt="Event Image">` : ""}
+                <div class="ticket-info">
+                  <p><strong>Event:</strong> ${booking.eventName}</p>
+                  <p><strong>Tickets:</strong> ${booking.tickets}</p>
+                  <p><strong>Total Amount:</strong> $${booking.totalAmount}</p>
+                  <p><strong>Status:</strong> <span class="${statusClass}">${booking.status.toUpperCase()}</span></p>
+                  <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
+                </div>
+                <div class="ticket-barcode"></div>
+              `;
+              ticketsContainer.appendChild(ticketCard);
+            }
+          }
+
+          if (!hasBooking) {
+            ticketsContainer.innerHTML = `<p class="no-booking">No bookings found.</p>`;
+          }
+        });
+      } else {
+        ticketsContainer.innerHTML = `<p class="no-booking">Please log in to see your bookings.</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
