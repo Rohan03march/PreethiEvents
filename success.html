@@ -230,7 +230,7 @@
             const data = snapshot.val();
 
             eventDetailsDiv.innerHTML = `
-              ${data.eventImage ? `<img src="${data.eventImage}" alt="Event Image">` : ""}
+              ${data.image ? `<img src="${data.image}" alt="Event Image">` : ""}
               <div class="info">
                 <p><strong>Event:</strong> ${data.eventName}</p>
                 <p><strong>Tickets:</strong> ${data.tickets}</p>
