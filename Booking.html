@@ -3,85 +3,111 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Event Booking</title>
+  <title>Event Booking | Preethi Events</title>
+
+  <!-- Bootstrap + Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+
   <style>
     body {
-      background: #f8fafc;
+      background: linear-gradient(120deg, #f8fafc, #e2e8f0);
       font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 15px;
     }
 
     .booking-section {
-      padding: 60px 0;
-    }
-
-    .booking-card {
+      width: 100%;
+      max-width: 1100px;
       background: #fff;
-      border-radius: 20px;
-      padding: 40px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-      transition: all 0.3s ease;
+      border-radius: 24px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      transition: all 0.4s ease;
+      animation: fadeUp 0.6s ease-out;
     }
 
-    .booking-card:hover {
-      transform: translateY(-5px);
+    @keyframes fadeUp {
+      0% { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
 
     .poster {
       width: 100%;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0;
+    }
+
+    .booking-info {
+      padding: 50px;
     }
 
     .title {
-      font-size: 1.8rem;
+      font-size: 2rem;
       font-weight: 700;
       color: #0f172a;
-      text-align: center;
+      margin-bottom: 12px;
+      line-height: 1.3;
     }
 
     .price {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: 700;
       color: #0f172a;
+      margin-bottom: 10px;
     }
 
     .price span {
       color: #6b7280;
-      font-size: 1.8rem;
-      margin-left: 8px;
-      color: #0f172a
+      font-size: 1.1rem;
+      margin-left: 4px;
+      font-weight: 500;
     }
 
-    .save {
-      color: #22c55e;
-      font-weight: 600;
-      font-size: 0.95rem;
+    .text-muted {
+      color: #6b7280 !important;
     }
 
-    .rating {
-      color: #facc15;
+    .info-list {
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    .info-list div {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 1rem;
+      color: #4b5563;
+      margin-bottom: 8px;
     }
 
     .ticket-counter {
       display: flex;
       align-items: center;
+      justify-content: flex-start;
       gap: 10px;
-      margin: 20px 0;
+      margin: 25px 0;
     }
 
     .ticket-counter button {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border: 1px solid #d1d5db;
       background: #fff;
       border-radius: 10px;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       font-weight: 600;
       color: #0f172a;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
     }
 
     .ticket-counter button:hover {
@@ -90,214 +116,209 @@
     }
 
     .ticket-input {
-      width: 70px;
+      width: 75px;
       text-align: center;
       border-radius: 10px;
       border: 1px solid #d1d5db;
       font-size: 1rem;
-      padding: 5px;
+      padding: 8px;
       font-weight: 600;
+      background-color: #f9fafb;
     }
 
     .btn-checkout {
-      background: #0f172a;
+      background: linear-gradient(90deg, #0f172a, #1e293b);
       color: #fff;
-      border-radius: 10px;
-      padding: 12px 0;
+      border-radius: 12px;
+      padding: 14px 0;
       font-weight: 600;
-      font-size: 1rem;
-      transition: all 0.3s ease;
+      font-size: 1.1rem;
       border: none;
       width: 100%;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.15);
     }
 
     .btn-checkout:hover {
-      background: #1e293b;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(15, 23, 42, 0.3);
     }
 
-    .info-list {
-      margin-top: 25px;
-    }
+    @media(max-width: 992px) {
+      body {
+        padding: 20px;
+      }
 
-    .info-list div {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.95rem;
-      color: #4b5563;
-      margin-bottom: 10px;
-    }
+      .booking-section {
+        flex-direction: column;
+      }
 
-    @media(max-width:992px){
-      .booking-card { padding: 30px; }
-      .title { font-size: 1.6rem; }
+      .booking-info {
+        padding: 30px 20px;
+      }
+
+      .title {
+        font-size: 1.6rem;
+      }
+
+      .price {
+        font-size: 1.4rem;
+      }
+
+      .btn-checkout {
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
 
 <body>
-  <section class="booking-section">
-    <div class="container">
-      <div class="row g-5 align-items-center">
-        <!-- Image -->
-        <div class="col-lg-6">
-          <img id="bookingImage" src="" alt="Event Poster" class="poster img-fluid" />
-        </div>
-
-        <!-- Info Card -->
-        <div class="col-lg-6">
-          <div class="booking-card">
-            <h2 id="bookingName" class="title mb-2">Event Name</h2>
-
-            <!-- <div class="rating mb-2">
-              ★★★★★ <span class="text-muted" style="font-size:0.9rem;">6 Reviews</span>
-            </div> -->
-
-            <div class="price mb-2">
-              $<span id="bookingCost">0</span> Per ticket
-            </div>
-
-            <!-- <div class="save mb-3">Save 42% right now</div> -->
-
-            <p id="bookingDescription" class="text-muted mb-4">Event Description here...</p>
-
-            <div class="info-list">
-              <div><i class="bi bi-calendar-event-fill"></i> <span id="bookingDate"></span></div>
-              <div><i class="bi bi-ticket-fill"></i> <span id="ticketsLeft"></span></div>
-            </div>
-
-            <!-- Quantity -->
-            <div class="ticket-counter">
-              <button id="decrementBtn"><i class="bi bi-dash"></i></button>
-              <input type="number" id="ticketCount" value="1" min="1" class="ticket-input" />
-              <button id="incrementBtn"><i class="bi bi-plus"></i></button>
-            </div>
-
-            <h5 class="mb-3">Total: $<span id="totalPrice">0</span></h5>
-
-            <button id="proceedBtn" class="btn-checkout">Proceed To Payment</button>
-          </div>
-        </div>
-      </div>
+  <div class="booking-section row g-0">
+    <!-- Image -->
+    <div class="col-lg-6">
+      <img id="bookingImage" src="" alt="Event Poster" class="poster img-fluid" />
     </div>
-  </section>
+
+    <!-- Info -->
+    <div class="col-lg-6 booking-info">
+      <h2 id="bookingName" class="title">Event Name</h2>
+
+      <div class="price">$<span id="bookingCost">0</span> <small>per ticket</small></div>
+
+      <p id="bookingDescription" class="text-muted">Loading event details...</p>
+
+      <div class="info-list">
+        <div><i class="bi bi-calendar-event-fill text-dark"></i> <span id="bookingDate"></span></div>
+        <div><i class="bi bi-ticket-perforated-fill text-dark"></i> <span id="ticketsLeft"></span></div>
+      </div>
+
+      <div class="ticket-counter">
+        <button id="decrementBtn"><i class="bi bi-dash"></i></button>
+        <input type="number" id="ticketCount" value="1" min="1" class="ticket-input" />
+        <button id="incrementBtn"><i class="bi bi-plus"></i></button>
+      </div>
+
+      <h5 class="fw-semibold mb-4">Total: $<span id="totalPrice">0</span></h5>
+
+      <button id="proceedBtn" class="btn-checkout">Proceed to Payment</button>
+    </div>
+  </div>
 
   <!-- Firebase + Stripe Logic -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA3ChaO6pXKubN4WeVffJK5q0tPmpT1XEc",
-  authDomain: "partybooking-ecdf1.firebaseapp.com",
-  databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
-  projectId: "partybooking-ecdf1",
-  storageBucket: "partybooking-ecdf1.appspot.com",
-  messagingSenderId: "119112973933",
-  appId: "1:119112973933:web:87037ff1b10958bb118964",
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyA3ChaO6pXKubN4WeVffJK5q0tPmpT1XEc",
+      authDomain: "partybooking-ecdf1.firebaseapp.com",
+      databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
+      projectId: "partybooking-ecdf1",
+      storageBucket: "partybooking-ecdf1.appspot.com",
+      messagingSenderId: "119112973933",
+      appId: "1:119112973933:web:87037ff1b10958bb118964",
+    };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
 
-const bookingImage = document.getElementById("bookingImage");
-const bookingName = document.getElementById("bookingName");
-const bookingDescription = document.getElementById("bookingDescription");
-const bookingDate = document.getElementById("bookingDate");
-const bookingCost = document.getElementById("bookingCost");
-const ticketsLeft = document.getElementById("ticketsLeft");
-const ticketCount = document.getElementById("ticketCount");
-const totalPrice = document.getElementById("totalPrice");
-const incrementBtn = document.getElementById("incrementBtn");
-const decrementBtn = document.getElementById("decrementBtn");
-const proceedBtn = document.getElementById("proceedBtn");
+    const bookingImage = document.getElementById("bookingImage");
+    const bookingName = document.getElementById("bookingName");
+    const bookingDescription = document.getElementById("bookingDescription");
+    const bookingDate = document.getElementById("bookingDate");
+    const bookingCost = document.getElementById("bookingCost");
+    const ticketsLeft = document.getElementById("ticketsLeft");
+    const ticketCount = document.getElementById("ticketCount");
+    const totalPrice = document.getElementById("totalPrice");
+    const incrementBtn = document.getElementById("incrementBtn");
+    const decrementBtn = document.getElementById("decrementBtn");
+    const proceedBtn = document.getElementById("proceedBtn");
 
-const urlParams = new URLSearchParams(window.location.search);
-const eventId = urlParams.get("id");
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventId = urlParams.get("id");
 
-let costPerTicket = 0;
-let ticketsAvailable = 0;
+    let costPerTicket = 0;
+    let ticketsAvailable = 0;
 
-async function loadEvent() {
-  const snapshot = await get(ref(db, `events/${eventId}`));
-  if (!snapshot.exists()) return alert("Event not found!");
-  const e = snapshot.val();
+    async function loadEvent() {
+      const snapshot = await get(ref(db, `events/${eventId}`));
+      if (!snapshot.exists()) return alert("Event not found!");
+      const e = snapshot.val();
 
-  bookingImage.src = e.imageUrl || "https://via.placeholder.com/400x400";
-  bookingName.textContent = e.name;
-  bookingDescription.textContent = e.description || "";
-  bookingDate.textContent = e.dateTime ? new Date(e.dateTime).toLocaleString() : "TBD";
-  bookingCost.textContent = e.cost || 0;
-  ticketsAvailable = e.tickets || 0;
-  ticketsLeft.textContent = ticketsAvailable > 0 ? `${ticketsAvailable} tickets left` : "Sold Out";
+      bookingImage.src = e.imageUrl || "https://via.placeholder.com/400x400";
+      bookingName.textContent = e.name;
+      bookingDescription.textContent = e.description || "";
+      bookingDate.textContent = e.dateTime ? new Date(e.dateTime).toLocaleString() : "TBD";
+      bookingCost.textContent = e.cost || 0;
+      ticketsAvailable = e.tickets || 0;
+      ticketsLeft.textContent = ticketsAvailable > 0 ? `${ticketsAvailable} tickets left` : "Sold Out";
 
-  costPerTicket = e.cost || 0;
-  totalPrice.textContent = costPerTicket;
-}
+      costPerTicket = e.cost || 0;
+      totalPrice.textContent = costPerTicket;
+    }
 
-function updateTotal() {
-  const count = Number(ticketCount.value) || 1;
-  totalPrice.textContent = costPerTicket * count;
-}
+    function updateTotal() {
+      const count = Number(ticketCount.value) || 1;
+      totalPrice.textContent = costPerTicket * count;
+    }
 
-incrementBtn.addEventListener("click", () => {
-  if (Number(ticketCount.value) < ticketsAvailable)
-    ticketCount.value = Number(ticketCount.value) + 1;
-  updateTotal();
-});
-
-decrementBtn.addEventListener("click", () => {
-  if (Number(ticketCount.value) > 1)
-    ticketCount.value = Number(ticketCount.value) - 1;
-  updateTotal();
-});
-
-ticketCount.addEventListener("input", () => {
-  if (ticketCount.value < 1) ticketCount.value = 1;
-  if (ticketCount.value > ticketsAvailable) ticketCount.value = ticketsAvailable;
-  updateTotal();
-});
-
-proceedBtn.addEventListener("click", async () => {
-  const ticketsSelected = Number(ticketCount.value);
-  if (ticketsSelected > ticketsAvailable)
-    return alert(`Only ${ticketsAvailable} tickets left!`);
-  if (!auth.currentUser) return alert("Please login first!");
-
-  const bookingId = "BK" + Date.now() + Math.floor(Math.random() * 1000);
-  proceedBtn.disabled = true;
-  proceedBtn.textContent = "Processing...";
-
-  try {
-    const response = await fetch("/.netlify/functions/createStripeSession", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        eventId,
-        eventName: bookingName.textContent,
-        tickets: ticketsSelected,
-        totalAmount: costPerTicket * ticketsSelected,
-        userId: auth.currentUser.uid,
-        bookingId,
-      }),
+    incrementBtn.addEventListener("click", () => {
+      if (Number(ticketCount.value) < ticketsAvailable)
+        ticketCount.value = Number(ticketCount.value) + 1;
+      updateTotal();
     });
 
-    const data = await response.json();
-    if (data.url) window.location.href = data.url;
-    else alert("Failed to initiate payment.");
-  } catch (err) {
-    console.error(err);
-    alert("Error creating payment session.");
-  } finally {
-    proceedBtn.disabled = false;
-    proceedBtn.textContent = "Redirecting you to payment....";
-  }
-});
+    decrementBtn.addEventListener("click", () => {
+      if (Number(ticketCount.value) > 1)
+        ticketCount.value = Number(ticketCount.value) - 1;
+      updateTotal();
+    });
 
-loadEvent();
-</script>
+    ticketCount.addEventListener("input", () => {
+      if (ticketCount.value < 1) ticketCount.value = 1;
+      if (ticketCount.value > ticketsAvailable) ticketCount.value = ticketsAvailable;
+      updateTotal();
+    });
 
+    proceedBtn.addEventListener("click", async () => {
+      const ticketsSelected = Number(ticketCount.value);
+      if (ticketsSelected > ticketsAvailable)
+        return alert(`Only ${ticketsAvailable} tickets left!`);
+      if (!auth.currentUser) return alert("Please login first!");
+
+      const bookingId = "BK" + Date.now() + Math.floor(Math.random() * 1000);
+      proceedBtn.disabled = true;
+      proceedBtn.textContent = "Processing...";
+
+      try {
+        const response = await fetch("/.netlify/functions/createStripeSession", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventId,
+            eventName: bookingName.textContent,
+            tickets: ticketsSelected,
+            totalAmount: costPerTicket * ticketsSelected,
+            userId: auth.currentUser.uid,
+            bookingId,
+          }),
+        });
+
+        const data = await response.json();
+        if (data.url) window.location.href = data.url;
+        else alert("Failed to initiate payment.");
+      } catch (err) {
+        console.error(err);
+        alert("Error creating payment session.");
+      } finally {
+        proceedBtn.disabled = false;
+        proceedBtn.textContent = "Redirecting to Payment...";
+      }
+    });
+
+    loadEvent();
+  </script>
 </body>
 </html>
