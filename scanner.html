@@ -22,12 +22,13 @@
       text-align: center;
     }
     #scanner-container {
-      margin-top: 30px;
+      margin-top: 20px;
       width: 100%;
       max-width: 500px;
       border: 2px solid #00e676;
       border-radius: 12px;
       overflow: hidden;
+      display: none; /* Hide initially */
     }
     #status {
       margin-top: 20px;
@@ -38,6 +39,9 @@
     .status-valid { color: #00e676; }
     .status-invalid { color: #ff3d00; }
     .status-used { color: #ffb300; }
+    #scanBtn {
+      margin-top: 20px;
+    }
     @media (max-width: 576px) {
       #scanner-container { width: 100%; }
       #status { font-size: 16px; }
@@ -46,8 +50,9 @@
 </head>
 <body>
   <h1>Ticket Scanner</h1>
+  <button id="scanBtn" class="btn btn-success">Scan Ticket</button>
   <div id="scanner-container"></div>
-  <div id="status">Waiting for scan...</div>
+  <div id="status">Waiting to start scanning...</div>
 
   <!-- QR code scanner library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
@@ -70,6 +75,9 @@
     const db = getDatabase(app);
 
     const statusEl = document.getElementById("status");
+    const scannerContainer = document.getElementById("scanner-container");
+    const scanBtn = document.getElementById("scanBtn");
+
     const html5QrCode = new Html5Qrcode("scanner-container");
     const qrConfig = { fps: 10, qrbox: 250 };
 
@@ -101,7 +109,7 @@
           statusEl.className = "status-invalid";
         }).finally(() => {
           setTimeout(() => {
-            statusEl.textContent = "Waiting for scan...";
+            statusEl.textContent = "Waiting to start scanning...";
             statusEl.className = "";
             html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess);
           }, 3000);
@@ -109,12 +117,17 @@
       });
     }
 
-    html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess)
-      .catch(err => {
-        console.error("Unable to start scanner", err);
-        statusEl.textContent = "Camera access denied or not available!";
-        statusEl.className = "status-invalid";
-      });
+    // Start scanning only when button is clicked
+    scanBtn.addEventListener("click", () => {
+      scannerContainer.style.display = "block"; // show scanner
+      html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess)
+        .catch(err => {
+          console.error("Unable to start scanner", err);
+          statusEl.textContent = "Camera access denied or not available!";
+          statusEl.className = "status-invalid";
+        });
+      scanBtn.disabled = true; // optional: disable button while scanning
+    });
   </script>
 </body>
 </html>
