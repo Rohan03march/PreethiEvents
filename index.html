@@ -362,6 +362,31 @@ const ticketsInfo = ticketsLeft > 0
 
 const disabledAttr = ticketsLeft === 0 ? "disabled" : "";
 
+// Convert ISO string to readable format
+function formatDateTime(isoString) {
+  if (!isoString) return "No date provided";
+  
+  const date = new Date(isoString);
+
+  const options = { 
+    weekday: 'long',   // Saturday
+    day: '2-digit',    // 25
+    month: 'short',    // Oct
+    hour: 'numeric',   // 4
+    minute: '2-digit', // 00
+    hour12: true       // AM/PM
+  };
+
+  // Get parts individually
+  const weekday = date.toLocaleString('en-US', { weekday: 'long' });
+  const day = date.toLocaleString('en-US', { day: '2-digit' });
+  const month = date.toLocaleString('en-US', { month: 'short' });
+  const time = date.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+  return `${weekday}, ${day} ${month} | ${time}`;
+}
+
+// Inside your loop where you generate HTML
 eventsList.innerHTML += `
   <div class="col-lg-4 col-md-6">
     <div class="card bg-dark text-white border-0 shadow-sm h-100">
@@ -369,7 +394,7 @@ eventsList.innerHTML += `
       <div class="card-body d-flex flex-column">
         <h5 class="card-title text-primary">${e.name}</h5>
         <p class="card-text text-light small mb-2">${e.description || "No description provided."}</p>
-        <p class="card-text text-light small mb-2">${e.dateTime || "No date provided"}</p>
+        <p class="card-text text-light small mb-2">${formatDateTime(e.dateTime)}</p>
         <p class="card-text d-flex justify-content-between align-items-center mb-1">
           <span><i class="bi bi-currency-dollar"></i> ${e.cost || 0} per ticket</span>
           ${ticketsInfo}
@@ -383,6 +408,7 @@ eventsList.innerHTML += `
     </div>
   </div>
 `;
+
 
         });
       } else {
