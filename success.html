@@ -3,44 +3,64 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Payment Successful | Preethi Events</title>
+    <title>Payment Success | Preethi Events</title>
 
-    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
 
     <style>
-      * {
-        box-sizing: border-box;
-      }
-
       body {
-        font-family: "Poppins", sans-serif;
-        background: linear-gradient(135deg, #f9f9ff 0%, #f2f6ff 100%);
+        margin: 0;
+        height: 100vh;
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
-        margin: 0;
-        padding: 20px;
+        background: radial-gradient(circle at top right, #1f1c2c, #928dab);
+        font-family: "Poppins", sans-serif;
+        overflow: hidden;
+        color: #fff;
+      }
+
+      /* Confetti Animation */
+      .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: gold;
+        opacity: 0.8;
+        border-radius: 50%;
+        animation: fall 3s linear infinite;
+      }
+
+      @keyframes fall {
+        0% {
+          transform: translateY(-10px) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(720deg);
+          opacity: 0;
+        }
       }
 
       .card {
-        background: #ffffff;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-        padding: 40px 35px;
+        padding: 40px;
+        width: 90%;
         max-width: 420px;
-        width: 100%;
         text-align: center;
-        animation: fadeInUp 0.7s ease-in-out;
-        position: relative;
-        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        transform: translateY(20px);
+        animation: fadeUp 0.8s ease forwards;
       }
 
-      @keyframes fadeInUp {
+      @keyframes fadeUp {
         from {
           opacity: 0;
           transform: translateY(40px);
@@ -51,131 +71,137 @@
         }
       }
 
-      .card::before {
-        content: "";
-        position: absolute;
-        top: -100px;
-        right: -100px;
-        width: 200px;
-        height: 200px;
-        background: radial-gradient(circle at center, #4caf50 0%, transparent 70%);
-        opacity: 0.1;
-      }
-
       .success-icon {
-        font-size: 70px;
-        color: #4caf50;
-        margin-bottom: 20px;
-        animation: pop 0.4s ease;
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, #00e676, #1de9b6);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 20px;
+        animation: pop 0.6s ease-out;
+        box-shadow: 0 0 20px rgba(29, 233, 182, 0.5);
       }
 
       @keyframes pop {
         0% {
-          transform: scale(0.5);
-          opacity: 0;
+          transform: scale(0);
+        }
+        80% {
+          transform: scale(1.1);
         }
         100% {
           transform: scale(1);
-          opacity: 1;
         }
       }
 
+      .success-icon::before {
+        content: "✓";
+        font-size: 45px;
+        color: #fff;
+        font-weight: 700;
+      }
+
       h2 {
-        margin: 0;
-        color: #222;
-        font-weight: 600;
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+        color: #fff;
       }
 
       p {
-        color: #666;
-        margin: 10px 0 25px;
-        font-size: 15px;
+        font-size: 1rem;
+        color: #ddd;
+        margin-bottom: 25px;
+      }
+
+      .info {
+        text-align: left;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 15px;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 25px;
+      }
+
+      .info strong {
+        color: #fff;
       }
 
       img {
         width: 100%;
         border-radius: 12px;
-        margin: 15px 0;
-        object-fit: cover;
-      }
-
-      .info {
-        text-align: left;
-        font-size: 14px;
-        background: #f8f9fd;
-        padding: 15px;
-        border-radius: 12px;
-        margin-top: 15px;
-        border: 1px solid #eee;
-      }
-
-      .info p {
-        margin: 8px 0;
-      }
-
-      .status-paid {
-        color: #22c55e;
-        font-weight: 600;
-      }
-
-      .status-pending {
-        color: #f59e0b;
-        font-weight: 600;
+        margin-bottom: 15px;
       }
 
       .home-btn {
-        background: #4caf50;
-        color: white;
-        padding: 12px 25px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
         display: inline-block;
-        margin-top: 25px;
-        transition: 0.25s ease;
+        background: linear-gradient(90deg, #00e676, #1de9b6);
+        color: #000;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 12px 30px;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(29, 233, 182, 0.5);
       }
 
       .home-btn:hover {
-        background: #43a047;
         transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(29, 233, 182, 0.7);
       }
 
-      .brand {
-        font-size: 13px;
-        color: #aaa;
-        margin-top: 20px;
+      /* Glow ring around card */
+      .glow {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(29, 233, 182, 0.4), transparent 70%);
+        filter: blur(50px);
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 0;
+        animation: pulse 3s infinite ease-in-out;
       }
 
-      @media (max-width: 480px) {
-        .card {
-          padding: 30px 20px;
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.4;
+          transform: translateX(-50%) scale(1);
         }
+        50% {
+          opacity: 1;
+          transform: translateX(-50%) scale(1.2);
+        }
+      }
 
-        .success-icon {
-          font-size: 55px;
-        }
-
-        h2 {
-          font-size: 22px;
-        }
+      .card,
+      .confetti,
+      .glow {
+        z-index: 1;
       }
     </style>
   </head>
   <body>
+    <div class="glow"></div>
+    <div id="confetti-container"></div>
+
     <div class="card">
-      <div class="success-icon">✅</div>
+      <div class="success-icon"></div>
       <h2>Payment Successful!</h2>
-      <p>Thank you for booking with <strong>Preethi Events</strong>.</p>
+      <p>Your booking has been confirmed 🎉</p>
 
       <div id="eventDetails">
-        <p>Loading your booking details...</p>
+        <p>Loading booking details...</p>
       </div>
 
       <a href="index.html" class="home-btn">Back to Home</a>
-      <div class="brand">© 2025 Preethi Events</div>
     </div>
 
-    <!-- Firebase Script -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
       import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
@@ -187,7 +213,7 @@
         projectId: "partybooking-ecdf1",
         storageBucket: "partybooking-ecdf1.appspot.com",
         messagingSenderId: "119112973933",
-        appId: "1:119112973933:web:87037ff1b10958bb118964",
+        appId: "1:119112973933:web:87037ff1b10958bb118964"
       };
 
       const app = initializeApp(firebaseConfig);
@@ -211,8 +237,8 @@
                 <p><strong>Total Amount:</strong> $${data.totalAmount}</p>
                 <p><strong>Status:</strong> ${
                   data.status === "paid"
-                    ? '<span class="status-paid">Paid</span>'
-                    : '<span class="status-pending">Pending</span>'
+                    ? '<span style="color:#00e676;font-weight:600;">Paid</span>'
+                    : '<span style="color:#ffb300;font-weight:600;">Pending</span>'
                 }</p>
                 <p><strong>Booking ID:</strong> ${data.bookingId}</p>
               </div>
@@ -223,6 +249,17 @@
         });
       } else {
         eventDetailsDiv.innerHTML = "<p>Invalid booking ID.</p>";
+      }
+
+      // 🎊 Confetti animation generator
+      const confettiContainer = document.getElementById("confetti-container");
+      for (let i = 0; i < 25; i++) {
+        const confetti = document.createElement("div");
+        confetti.classList.add("confetti");
+        confetti.style.left = Math.random() * 100 + "vw";
+        confetti.style.animationDelay = Math.random() * 2 + "s";
+        confetti.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
+        confettiContainer.appendChild(confetti);
       }
     </script>
   </body>
