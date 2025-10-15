@@ -28,7 +28,7 @@
       border: 2px solid #00e676;
       border-radius: 12px;
       overflow: hidden;
-      display: none; /* Hide initially */
+      display: none;
     }
     #status {
       margin-top: 20px;
@@ -42,9 +42,9 @@
     #scanBtn {
       margin-top: 20px;
     }
-    @media (max-width: 576px) {
-      #scanner-container { width: 100%; }
-      #status { font-size: 16px; }
+    video {
+      width: 100%;
+      border-radius: 12px;
     }
   </style>
 </head>
@@ -54,7 +54,6 @@
   <div id="scanner-container"></div>
   <div id="status">Waiting to start scanning...</div>
 
-  <!-- QR code scanner library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
 
   <script type="module">
@@ -81,12 +80,10 @@
     const html5QrCode = new Html5Qrcode("scanner-container");
     const qrConfig = { fps: 10, qrbox: 250 };
 
-    function onScanSuccess(decodedText, decodedResult) {
+    function onScanSuccess(decodedText) {
       html5QrCode.stop().then(() => {
-        statusEl.textContent = "Checking ticket...";
-        statusEl.className = "";
-
         const bookingId = decodedText.trim();
+        statusEl.textContent = "Checking ticket...";
         get(ref(db, `bookings/${bookingId}`)).then(snapshot => {
           const booking = snapshot.val();
           if (!booking) {
@@ -111,22 +108,22 @@
           setTimeout(() => {
             statusEl.textContent = "Waiting to start scanning...";
             statusEl.className = "";
-            html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess);
+            html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess)
+              .catch(err => console.error("Restart scan failed:", err));
           }, 3000);
         });
-      });
+      }).catch(err => console.error("Stop scan failed:", err));
     }
 
-    // Start scanning only when button is clicked
     scanBtn.addEventListener("click", () => {
       scannerContainer.style.display = "block"; // show scanner
+      scanBtn.disabled = true;
       html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess)
         .catch(err => {
-          console.error("Unable to start scanner", err);
+          console.error("Camera start failed:", err);
           statusEl.textContent = "Camera access denied or not available!";
           statusEl.className = "status-invalid";
         });
-      scanBtn.disabled = true; // optional: disable button while scanning
     });
   </script>
 </body>
