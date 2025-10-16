@@ -227,7 +227,6 @@ exports.handler = async function(event, context) {
       bookedBy: userName,
       bookedById: userId,
       createdAt: new Date().toISOString(),
-      paymentId: session.payment_intent // Stripe Payment Intent ID
     });
 
     return { statusCode: 200, body: JSON.stringify({ url: session.url }) };

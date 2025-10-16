@@ -39,6 +39,7 @@ exports.handler = async function(event, context) {
       if (bookingId) {
         await db.ref(`bookings/${bookingId}`).update({
           status: "paid",
+          paymentId: session.payment_intent,
           paidAt: new Date().toISOString()
         });
 
