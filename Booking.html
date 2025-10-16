@@ -303,11 +303,6 @@
       updateTotal();
     });
 
-    // ticketCount.addEventListener("input", () => {
-    //   if (ticketCount.value < 1) ticketCount.value = 1;
-    //   if (ticketCount.value > ticketsAvailable) ticketCount.value = ticketsAvailable;
-    //   updateTotal();
-    // });
     ticketCount.addEventListener("input", () => {
   // Remove any non-digit characters
   ticketCount.value = ticketCount.value.replace(/\D/g, '');
