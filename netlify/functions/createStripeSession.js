@@ -121,7 +121,6 @@ exports.handler = async function(event, context) {
       totalAmount,
       image: eventData.imageUrl || "",
       status: "pending",
-      paymentId: session.payment_intent,
       bookedBy: userName,      // store username/email
       bookedById: userId,      // store user UID
       createdAt: new Date().toISOString()
