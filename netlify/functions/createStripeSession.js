@@ -21,18 +21,30 @@ exports.handler = async function(event, context) {
 
     const { eventId, tickets, totalAmount, userId, bookingId, ticketType } = JSON.parse(event.body);
 
-    if (!eventId || !tickets || !totalAmount || !userId || !bookingId) {
+    if (!eventId || !tickets || !totalAmount || !userId || !bookingId || !ticketType) {
       return { statusCode: 400, body: JSON.stringify({ error: "Missing required parameters" }) };
     }
 
     // Fetch event details
     const snapshot = await db.ref(`events/${eventId}`).once("value");
-    if (!snapshot.exists())
+    if (!snapshot.exists()) {
       return { statusCode: 400, body: JSON.stringify({ error: "Event not found" }) };
-
+    }
     const eventData = snapshot.val();
-    if (!eventData.stripeAccountId)
+
+    if (!eventData.stripeAccountId) {
       return { statusCode: 400, body: JSON.stringify({ error: "Merchant not linked" }) };
+    }
+
+    // Check ticket availability
+    const ticketsInfo = eventData.tickets?.[ticketType] || null;
+    if (!ticketsInfo) {
+      return { statusCode: 400, body: JSON.stringify({ error: `${ticketType} tickets not available` }) };
+    }
+
+    if (ticketsInfo.qty != null && tickets > ticketsInfo.qty) {
+      return { statusCode: 400, body: JSON.stringify({ error: `Only ${ticketsInfo.qty} ${ticketType} tickets left` }) };
+    }
 
     const connectedAccountId = eventData.stripeAccountId;
     const pricePerTicket = totalAmount / tickets;
@@ -56,14 +68,14 @@ exports.handler = async function(event, context) {
       mode: "payment",
       success_url: `https://preethievents.netlify.app/success.html?bookingId=${bookingId}`,
       cancel_url: `https://preethievents.netlify.app/cancel.html`,
-      metadata: { bookingId, ticketType },
+      metadata: { bookingId, ticketType, eventId, tickets },
       payment_intent_data: {
         application_fee_amount: platformFee,
         transfer_data: { destination: connectedAccountId }
       }
     });
 
-    // Save booking in Firebase including Stripe Payment ID
+    // Save booking in Firebase (status pending initially)
     await db.ref(`bookings/${bookingId}`).set({
       bookingId,
       eventId,
@@ -72,7 +84,7 @@ exports.handler = async function(event, context) {
       ticketType,
       totalAmount,
       image: eventData.imageUrl || "",
-      status: "pending",
+      status: "pending", // payment not completed yet
       bookedBy: userName,
       bookedById: userId,
       createdAt: new Date().toISOString(),
