@@ -15,21 +15,28 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async function(event, context) {
   try {
-    // Parse request body
-    const { eventId, tickets, totalAmount, userId, bookingId } = JSON.parse(event.body);
+    if (!event.body) {
+      return { statusCode: 400, body: JSON.stringify({ error: "No request body" }) };
+    }
+
+    const { eventId, tickets, totalAmount, userId, bookingId, ticketType } = JSON.parse(event.body);
+
+    if (!eventId || !tickets || !totalAmount || !userId || !bookingId) {
+      return { statusCode: 400, body: JSON.stringify({ error: "Missing required parameters" }) };
+    }
 
     // Fetch event details
     const snapshot = await db.ref(`events/${eventId}`).once("value");
     if (!snapshot.exists())
       return { statusCode: 400, body: JSON.stringify({ error: "Event not found" }) };
-    
+
     const eventData = snapshot.val();
     if (!eventData.stripeAccountId)
       return { statusCode: 400, body: JSON.stringify({ error: "Merchant not linked" }) };
 
     const connectedAccountId = eventData.stripeAccountId;
-    const platformFee = Math.round(totalAmount * 0.1 * 100); // 10% platform fee in cents
     const pricePerTicket = totalAmount / tickets;
+    const platformFee = Math.round(totalAmount * 0.1 * 100); // 10% platform fee in cents
 
     // Fetch user details from Firebase Auth
     const userRecord = await admin.auth().getUser(userId);
@@ -41,7 +48,7 @@ exports.handler = async function(event, context) {
       line_items: [{
         price_data: {
           currency: "usd",
-          product_data: { name: eventData.name },
+          product_data: { name: `${eventData.name} (${ticketType})` },
           unit_amount: Math.round(pricePerTicket * 100)
         },
         quantity: tickets
@@ -49,7 +56,7 @@ exports.handler = async function(event, context) {
       mode: "payment",
       success_url: `https://preethievents.netlify.app/success.html?bookingId=${bookingId}`,
       cancel_url: `https://preethievents.netlify.app/cancel.html`,
-      metadata: { bookingId },
+      metadata: { bookingId, ticketType },
       payment_intent_data: {
         application_fee_amount: platformFee,
         transfer_data: { destination: connectedAccountId }
@@ -62,9 +69,10 @@ exports.handler = async function(event, context) {
       eventId,
       eventName: eventData.name,
       tickets,
+      ticketType,
       totalAmount,
       image: eventData.imageUrl || "",
-      status: "pending",          // payment not completed yet
+      status: "pending",
       bookedBy: userName,
       bookedById: userId,
       createdAt: new Date().toISOString(),
@@ -73,7 +81,7 @@ exports.handler = async function(event, context) {
     return { statusCode: 200, body: JSON.stringify({ url: session.url }) };
 
   } catch(err) {
-    console.error(err);
+    console.error("Stripe Session Error:", err);
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };

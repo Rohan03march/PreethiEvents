@@ -196,6 +196,13 @@
       <h2 id="bookingName" class="title">Event Name</h2>
       <p id="bookingDescription" class="text-muted">Loading event details...</p>
 
+      <!-- Ticket Type Buttons -->
+      <div class="ticket-types mb-3">
+        <button class="btn btn-outline-primary me-2" id="btnBasic">Basic</button>
+        <button class="btn btn-outline-secondary me-2" id="btnSilver">Silver</button>
+        <button class="btn btn-outline-warning" id="btnGold">Gold</button>
+      </div>
+
       <div class="price">$<span id="bookingCost">0</span> <small>Per ticket</small></div>
 
       <div class="info-list">
@@ -203,9 +210,9 @@
         <div><i class="bi bi-ticket-perforated-fill text-bg"></i> <span id="ticketsLeft"></span></div>
       </div>
 
-      <div class="ticket-counter">
+      <div class="ticket-counter my-2">
         <button id="decrementBtn"><i class="bi bi-dash"></i></button>
-        <input type="" id="ticketCount" value="1" min="1" class="ticket-input" />
+        <input type="text" id="ticketCount" value="1" min="1" class="ticket-input" />
         <button id="incrementBtn"><i class="bi bi-plus"></i></button>
       </div>
 
@@ -217,140 +224,184 @@
 
   <!-- Firebase + Stripe Logic -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyA3ChaO6pXKubN4WeVffJK5q0tPmpT1XEc",
-      authDomain: "partybooking-ecdf1.firebaseapp.com",
-      databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
-      projectId: "partybooking-ecdf1",
-      storageBucket: "partybooking-ecdf1.appspot.com",
-      messagingSenderId: "119112973933",
-      appId: "1:119112973933:web:87037ff1b10958bb118964",
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyA3ChaO6pXKubN4WeVffJK5q0tPmpT1XEc",
+    authDomain: "partybooking-ecdf1.firebaseapp.com",
+    databaseURL: "https://partybooking-ecdf1-default-rtdb.firebaseio.com",
+    projectId: "partybooking-ecdf1",
+    storageBucket: "partybooking-ecdf1.appspot.com",
+    messagingSenderId: "119112973933",
+    appId: "1:119112973933:web:87037ff1b10958bb118964",
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
 
-    const bookingImage = document.getElementById("bookingImage");
-    const bookingName = document.getElementById("bookingName");
-    const bookingDescription = document.getElementById("bookingDescription");
-    const bookingDate = document.getElementById("bookingDate");
-    const bookingCost = document.getElementById("bookingCost");
-    const ticketsLeft = document.getElementById("ticketsLeft");
-    const ticketCount = document.getElementById("ticketCount");
-    const totalPrice = document.getElementById("totalPrice");
-    const incrementBtn = document.getElementById("incrementBtn");
-    const decrementBtn = document.getElementById("decrementBtn");
-    const proceedBtn = document.getElementById("proceedBtn");
+  // DOM elements
+  const bookingImage = document.getElementById("bookingImage");
+  const bookingName = document.getElementById("bookingName");
+  const bookingDescription = document.getElementById("bookingDescription");
+  const bookingDate = document.getElementById("bookingDate");
+  const bookingCost = document.getElementById("bookingCost");
+  const ticketsLeft = document.getElementById("ticketsLeft");
+  const ticketCount = document.getElementById("ticketCount");
+  const totalPrice = document.getElementById("totalPrice");
+  const incrementBtn = document.getElementById("incrementBtn");
+  const decrementBtn = document.getElementById("decrementBtn");
+  const proceedBtn = document.getElementById("proceedBtn");
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventId = urlParams.get("id");
+  const btnBasic = document.getElementById("btnBasic");
+  const btnSilver = document.getElementById("btnSilver");
+  const btnGold = document.getElementById("btnGold");
 
-    let costPerTicket = 0;
-    let ticketsAvailable = 0;
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get("id");
 
-    async function loadEvent() {
-      const snapshot = await get(ref(db, `events/${eventId}`));
-      if (!snapshot.exists()) return alert("Event not found!");
-      const e = snapshot.val();
+  let selectedType = "basic";
+  let ticketsAvailable = 0;
+  let costPerTicket = 0;
+  let ticketsData = {}; // Store ticket info
 
-      bookingImage.src = e.imageUrl || "https://via.placeholder.com/400x400";
-      bookingName.textContent = e.name;
-      bookingDescription.textContent = e.description || "";
-      if (e.dateTime) {
-          const eventDate = new Date(e.dateTime);
+  async function loadEvent() {
+    const snapshot = await get(ref(db, `events/${eventId}`));
+    if (!snapshot.exists()) return alert("Event not found!");
+    const e = snapshot.val();
 
-        // Format date: "Thu, 16 Oct"
-        const dateOptions = { weekday: 'long', day: 'numeric', month: 'short' };
-        const formattedDate = eventDate.toLocaleDateString('en-US', dateOptions);
+    bookingImage.src = e.imageUrl || "https://via.placeholder.com/400x400";
+    bookingName.textContent = e.name;
+    bookingDescription.textContent = e.description || "";
 
-        // Format time: "7:30 PM"
-        const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
-        const formattedTime = eventDate.toLocaleTimeString('en-US', timeOptions);
-
-        bookingDate.textContent = `${formattedDate} | ${formattedTime}`;
-            } else {
-        bookingDate.textContent = "TBD";
-      }
-
-      bookingCost.textContent = e.cost || 0;
-      ticketsAvailable = e.tickets || 0;
-      ticketsLeft.textContent = ticketsAvailable > 0 ? `${ticketsAvailable} tickets left` : "Sold Out";
-
-      costPerTicket = e.cost || 0;
-      totalPrice.textContent = costPerTicket;
+    // Format date
+    if (e.dateTime) {
+      const eventDate = new Date(e.dateTime);
+      const dateOptions = { weekday: 'long', day: 'numeric', month: 'short' };
+      const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+      bookingDate.textContent = `${eventDate.toLocaleDateString('en-US', dateOptions)} | ${eventDate.toLocaleTimeString('en-US', timeOptions)}`;
+    } else {
+      bookingDate.textContent = "TBD";
     }
 
-    function updateTotal() {
-      const count = Number(ticketCount.value) || 1;
-      totalPrice.textContent = costPerTicket * count;
-    }
+    ticketsData = e.tickets || {};
+    setTicketType(selectedType);
+  }
 
-    incrementBtn.addEventListener("click", () => {
-      if (Number(ticketCount.value) < ticketsAvailable)
-        ticketCount.value = Number(ticketCount.value) + 1;
-      updateTotal();
-    });
+  function setTicketType(type) {
+    selectedType = type;
+    const ticket = ticketsData[type] || { cost: 0, qty: null };
 
-    decrementBtn.addEventListener("click", () => {
-      if (Number(ticketCount.value) > 1)
-        ticketCount.value = Number(ticketCount.value) - 1;
-      updateTotal();
-    });
+    // Update cost
+    costPerTicket = ticket.cost || 0;
+    bookingCost.textContent = costPerTicket;
 
-    ticketCount.addEventListener("input", () => {
-  // Remove any non-digit characters
-  ticketCount.value = ticketCount.value.replace(/\D/g, '');
-
-  // Apply min/max constraints
-  if (ticketCount.value === "" || Number(ticketCount.value) < 1) ticketCount.value = 1;
-  if (Number(ticketCount.value) > ticketsAvailable) ticketCount.value = ticketsAvailable;
-
-  updateTotal();
-});
-
-
-    proceedBtn.addEventListener("click", async () => {
-      const ticketsSelected = Number(ticketCount.value);
-      if (ticketsSelected > ticketsAvailable)
-        return alert(`Only ${ticketsAvailable} tickets left!`);
-      if (!auth.currentUser) return alert("Please login first!");
-
-      const bookingId = "BK" + Date.now() + Math.floor(Math.random() * 1000);
+    // Handle availability
+    if (ticket.qty === 0) {
+      ticketsAvailable = 0;
+      ticketsLeft.textContent = "Sold Out";
+      ticketCount.value = 0;
       proceedBtn.disabled = true;
-      proceedBtn.textContent = "Processing...";
+    } else if (ticket.qty == null) {
+      ticketsAvailable = Infinity;
+      ticketsLeft.textContent = "Available";
+      ticketCount.value = 1;
+      proceedBtn.disabled = false;
+    } else {
+      ticketsAvailable = ticket.qty;
+      ticketsLeft.textContent = `${ticketsAvailable} tickets left`;
+      ticketCount.value = 1;
+      proceedBtn.disabled = false;
+    }
 
-      try {
-        const response = await fetch("/.netlify/functions/createStripeSession", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            eventId,
-            eventName: bookingName.textContent,
-            tickets: ticketsSelected,
-            totalAmount: costPerTicket * ticketsSelected,
-            userId: auth.currentUser.uid,
-            bookingId,
-          }),
-        });
+    updateTotal();
+    highlightSelectedButton();
+  }
 
-        const data = await response.json();
-        if (data.url) window.location.href = data.url;
-        else alert("Failed to initiate payment.");
-      } catch (err) {
-        console.error(err);
-        alert("Error creating payment session.");
-      } finally {
-        proceedBtn.disabled = false;
-        proceedBtn.textContent = "Redirecting to Payment...";
-      }
-    });
+  function highlightSelectedButton() {
+    btnBasic.classList.toggle("btn-selected", selectedType === "basic");
+    btnSilver.classList.toggle("btn-selected", selectedType === "silver");
+    btnGold.classList.toggle("btn-selected", selectedType === "gold");
+  }
 
-    loadEvent();
-  </script>
+  function updateTotal() {
+    const count = Number(ticketCount.value) || 0;
+    totalPrice.textContent = costPerTicket * count;
+  }
+
+  // Button events
+  btnBasic.addEventListener("click", () => setTicketType("basic"));
+  btnSilver.addEventListener("click", () => setTicketType("silver"));
+  btnGold.addEventListener("click", () => setTicketType("gold"));
+
+  incrementBtn.addEventListener("click", () => {
+    if (Number(ticketCount.value) < ticketsAvailable)
+      ticketCount.value = Number(ticketCount.value) + 1;
+    updateTotal();
+  });
+
+  decrementBtn.addEventListener("click", () => {
+    if (Number(ticketCount.value) > 1)
+      ticketCount.value = Number(ticketCount.value) - 1;
+    updateTotal();
+  });
+
+  ticketCount.addEventListener("input", () => {
+    ticketCount.value = ticketCount.value.replace(/\D/g, '');
+    if (ticketCount.value === "" || Number(ticketCount.value) < 1) ticketCount.value = 1;
+    if (Number(ticketCount.value) > ticketsAvailable) ticketCount.value = ticketsAvailable;
+    updateTotal();
+  });
+
+  proceedBtn.addEventListener("click", async () => {
+    const ticketsSelected = Number(ticketCount.value);
+    if (ticketsSelected > ticketsAvailable) return alert(`Only ${ticketsAvailable} tickets left for ${selectedType}!`);
+    if (!auth.currentUser) return alert("Please login first!");
+
+    const bookingId = "BK" + Date.now() + Math.floor(Math.random() * 1000);
+    proceedBtn.disabled = true;
+    proceedBtn.textContent = "Processing...";
+
+    try {
+      const response = await fetch("/.netlify/functions/createStripeSession", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId,
+          eventName: bookingName.textContent,
+          tickets: ticketsSelected,
+          totalAmount: costPerTicket * ticketsSelected,
+          userId: auth.currentUser.uid,
+          bookingId,
+          ticketType: selectedType,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.url) window.location.href = data.url;
+      else alert("Failed to initiate payment.");
+    } catch (err) {
+      console.error(err);
+      alert("Error creating payment session.");
+    } finally {
+      proceedBtn.disabled = false;
+      proceedBtn.textContent = "Proceed to Payment";
+    }
+  });
+
+  loadEvent();
+</script>
+
+<style>
+  /* Highlight selected ticket type */
+  .btn-selected {
+    background-color: #0d6efd !important;
+    color: white !important;
+  }
+</style>
+
 </body>
+
 </html>
