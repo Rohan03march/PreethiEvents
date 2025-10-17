@@ -164,28 +164,30 @@
 
     <!-- Bookings Section -->
     <div id="bookings" class="content-section">
-      <h1 class="mb-4">Bookings</h1>
-      <div class="card bg-dark text-white shadow-sm border-0">
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-dark table-striped table-hover mb-0">
-              <thead>
-                <tr>
-                  <th>Booking ID</th>
-                  <th>Event Name</th>
-                  <th>Tickets</th>
-                  <th>Total Amount</th>
-                  <th>Booked By (UID)</th>
-                  <th>Status</th>
-                  <th>Created At</th>
-                </tr>
-              </thead>
-              <tbody id="bookingsContainer"></tbody>
-            </table>
-          </div>
-        </div>
+  <h1 class="mb-4 text-white">Bookings</h1>
+  <div class="card bg-dark text-white shadow border-0 rounded-4">
+    <div class="card-body p-4" style="background: linear-gradient(145deg, #1e1e1e, #2a2a2a); border-radius: 20px; width: 100%; max-width: 1400px; margin: auto;">
+      <div class="table-responsive">
+        <table class="table table-dark table-striped table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Event Name</th>
+              <th>Tickets</th>
+              <th>Total</th>
+              <th>Booked By</th>
+              <th>Status</th>
+              <th>PaymentId</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsContainer"></tbody>
+        </table>
       </div>
     </div>
+  </div>
+</div>
+
 
   </div>
 
@@ -431,11 +433,12 @@
           }
           tbody.innerHTML += `<tr>
             <td>${id}</td>
-            <td>${b.eventName}</td>
-            <td>${tickets}</td>
+            <td>${b.eventName} (${b.ticketType})</td>
+            <td>${b.tickets}</td>
             <td>$${b.totalAmount}</td>
             <td>${b.bookedBy}</td>
             <td>${b.status}</td>
+            <td>${b.paymentId}</td>
             <td>${new Date(b.createdAt).toLocaleString()}</td>
           </tr>`;
         });
