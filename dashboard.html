@@ -446,5 +446,30 @@
     }
 
   </script>
+  
+  <!-- No Inspect -->
+
+<script>
+// Disable right-click context menu
+document.addEventListener("contextmenu", function (event) {
+  event.preventDefault();
+});
+
+// Disable common inspect shortcuts
+document.addEventListener("keydown", function (event) {
+  // F12
+  if (event.key === "F12") {
+    event.preventDefault();
+  }
+  // Ctrl+Shift+I or Ctrl+Shift+J or Ctrl+U or Ctrl+S
+  if (
+    (event.ctrlKey && event.shiftKey && (event.key === "I" || event.key === "J")) ||
+    (event.ctrlKey && (event.key === "U" || event.key === "S"))
+  ) {
+    event.preventDefault();
+  }
+});
+</script>
+
 </body>
 </html>
