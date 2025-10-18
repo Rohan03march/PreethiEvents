@@ -38,7 +38,7 @@ auth.onAuthStateChanged(user => {
           <div class="ticket-cutout-right"></div>
           ${booking.image ? `<img src="${booking.image}" alt="Event Image" class="ticket-image">` : ""}
           <div class="ticket-info">
-            <p><strong>Event:</strong> ${booking.eventName || "N/A"}(${booking.ticketType})</p>
+            <p><strong>Event:</strong> ${booking.eventName || "N/A"}-<strong>${booking.ticketType}</strong></p>
             <p><strong>Tickets:</strong> ${booking.tickets || 0}</p>
             <p><strong>Booked By:</strong> ${booking.bookedBy || "N/A"}</p>
           </div>
