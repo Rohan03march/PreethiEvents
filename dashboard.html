@@ -415,35 +415,69 @@
     }
 
     // Load Bookings (example)
-    async function loadBookings(){
-      const tbody = document.getElementById("bookingsContainer");
-      tbody.innerHTML = "";
-      const snapshot = await get(ref(database, "bookings/"));
-      if(snapshot.exists()){
-        const bookings = snapshot.val();
-        Object.keys(bookings).forEach(id => {
-          const b = bookings[id];
-          let ticketInfo = "";
-          if(b.tickets) {
-            Object.keys(b.tickets).forEach(type => {
-              const t = b.tickets[type];
-              if(t) ticketInfo += `${type.charAt(0).toUpperCase()+type.slice(1)}: ${t.qty} | `;
-            });
-            ticketInfo = ticketInfo.slice(0,-3);
-          }
-          tbody.innerHTML += `<tr>
-            <td>${id}</td>
-            <td>${b.eventName} (${b.ticketType})</td>
-            <td>${b.tickets}</td>
-            <td>$${b.totalAmount}</td>
-            <td>${b.bookedBy}</td>
-            <td>${b.status}</td>
-            <td>${b.paymentId}</td>
-            <td>${new Date(b.createdAt).toLocaleString()}</td>
-          </tr>`;
-        });
+   async function loadBookings() {
+  const tbody = document.getElementById("bookingsContainer");
+  tbody.innerHTML = "";
+
+  const snapshot = await get(ref(database, "bookings/"));
+  if (snapshot.exists()) {
+    const bookings = snapshot.val();
+
+    // Convert Firebase object to array with ID
+    const bookingsArray = Object.keys(bookings).map((id) => ({
+      id,
+      ...bookings[id],
+    }));
+
+    // ✅ Sort by createdAt in DESCENDING order (newest → oldest)
+    bookingsArray.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Helper function: time ago
+    function timeAgo(date) {
+      const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+      const intervals = {
+        year: 31536000,
+        month: 2592000,
+        week: 604800,
+        day: 86400,
+        hour: 3600,
+        minute: 60,
+      };
+      for (const [unit, value] of Object.entries(intervals)) {
+        const interval = Math.floor(seconds / value);
+        if (interval >= 1) {
+          return `${interval} ${unit}${interval > 1 ? "s" : ""} ago`;
+        }
       }
+      return "just now";
     }
+
+    // ✅ Loop through sorted array
+    bookingsArray.forEach((b, index) => {
+      let ticketInfo = "";
+      if (b.tickets) {
+        Object.keys(b.tickets).forEach((type) => {
+          const t = b.tickets[type];
+          if (t) ticketInfo += `${type.charAt(0).toUpperCase() + type.slice(1)}: ${t.qty} | `;
+        });
+        ticketInfo = ticketInfo.slice(0, -3);
+      }
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${b.bookingId}</td>
+          <td>${b.eventName} (${b.ticketType || "-"})</td>
+          <td>${b.tickets || "-" }</td>
+          <td>$${b.totalAmount || 0}</td>
+          <td>${b.bookedBy || "-"}</td>
+          <td>${b.status || "-"}</td>
+          <td>${b.paymentId || "-"}</td>
+          <td>${timeAgo(b.createdAt)}</td>
+        </tr>`;
+    });
+  }
+}
+
 
   </script>
   
