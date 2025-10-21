@@ -14,7 +14,7 @@ const db = admin.database();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Replace this with Preethi's main Stripe account ID
-const PREETHI_MAIN_ACCOUNT_ID = "acct_1S2eEoIhIYHe93BY";
+const PREETHI_MAIN_ACCOUNT_ID = "acct_1S5OOkIzm2QjZg7F";
 
 exports.handler = async function(event, context) {
   try {
