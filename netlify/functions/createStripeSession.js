@@ -13,9 +13,6 @@ if (!admin.apps.length) {
 const db = admin.database();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Replace this with Preethi's main Stripe account ID
-const PREETHI_MAIN_ACCOUNT_ID = "acct_1S5OOkIzm2QjZg7F";
-
 exports.handler = async function(event, context) {
   try {
     if (!event.body) {
@@ -36,7 +33,7 @@ exports.handler = async function(event, context) {
     const eventData = snapshot.val();
 
     if (!eventData.stripeAccountId) {
-      return { statusCode: 400, body: JSON.stringify({ error: "Connected account not linked" }) };
+      return { statusCode: 400, body: JSON.stringify({ error: "Merchant not linked" }) };
     }
 
     // Check ticket availability
@@ -44,14 +41,19 @@ exports.handler = async function(event, context) {
     if (!ticketsInfo) {
       return { statusCode: 400, body: JSON.stringify({ error: `${ticketType} tickets not available` }) };
     }
+
     if (ticketsInfo.qty != null && tickets > ticketsInfo.qty) {
       return { statusCode: 400, body: JSON.stringify({ error: `Only ${ticketsInfo.qty} ${ticketType} tickets left` }) };
     }
 
-    const pricePerTicket = totalAmount / tickets;
-    const platformFee = Math.round(totalAmount * 0.10 * 100); // 10% in cents → goes to connected account (Rohan)
+    const connectedAccountId = eventData.stripeAccountId;
 
-    // Fetch user details
+    // Calculate dynamic split
+    const totalAmountCents = Math.round(totalAmount * 100);       // total in cents
+    const connectedAmount = Math.round(totalAmountCents * 0.1);   // 10% to connected account (Rohan)
+    const mainAmount = totalAmountCents - connectedAmount;         // 90% stays in main account (Preethi)
+
+    // Fetch user details from Firebase Auth
     const userRecord = await admin.auth().getUser(userId);
     const userName = userRecord.displayName || userRecord.email;
 
@@ -62,21 +64,21 @@ exports.handler = async function(event, context) {
         price_data: {
           currency: "usd",
           product_data: { name: `${eventData.name} (${ticketType})` },
-          unit_amount: Math.round(pricePerTicket * 100)
+          unit_amount: totalAmountCents
         },
-        quantity: tickets
+        quantity: 1
       }],
       mode: "payment",
       success_url: `https://preethievents.netlify.app/success.html?bookingId=${bookingId}`,
       cancel_url: `https://preethievents.netlify.app/cancel.html`,
       metadata: { bookingId, ticketType, eventId, tickets },
       payment_intent_data: {
-        application_fee_amount: platformFee, // 10% → Rohan
-        transfer_data: { destination: PREETHI_MAIN_ACCOUNT_ID } // 90% → Preethi
+        application_fee_amount: mainAmount,           // 90% stays in main account
+        transfer_data: { destination: connectedAccountId } // 10% goes to connected account
       }
     });
 
-    // Save booking in Firebase (status pending)
+    // Save booking in Firebase (status pending initially)
     await db.ref(`bookings/${bookingId}`).set({
       bookingId,
       eventId,
@@ -85,7 +87,7 @@ exports.handler = async function(event, context) {
       ticketType,
       totalAmount,
       image: eventData.imageUrl || "",
-      status: "pending",
+      status: "pending", // payment not completed yet
       bookedBy: userName,
       bookedById: userId,
       createdAt: new Date().toISOString(),
