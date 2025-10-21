@@ -48,10 +48,13 @@ exports.handler = async function(event, context) {
 
     const connectedAccountId = eventData.stripeAccountId;
 
-    // Calculate dynamic split
-    const totalAmountCents = Math.round(totalAmount * 100);       // total in cents
-    const connectedAmount = Math.round(totalAmountCents * 0.1);   // 10% to connected account (Rohan)
-    const mainAmount = totalAmountCents - connectedAmount;         // 90% stays in main account (Preethi)
+    // Calculate price per ticket in cents
+    const pricePerTicketCents = Math.round((totalAmount / tickets) * 100);
+
+    // Calculate split
+    const totalAmountCents = pricePerTicketCents * tickets;
+    const connectedAmount = Math.round(totalAmountCents * 0.1); // 10% → connected account
+    const mainAmount = totalAmountCents - connectedAmount;       // 90% → main account
 
     // Fetch user details from Firebase Auth
     const userRecord = await admin.auth().getUser(userId);
@@ -64,17 +67,17 @@ exports.handler = async function(event, context) {
         price_data: {
           currency: "usd",
           product_data: { name: `${eventData.name} (${ticketType})` },
-          unit_amount: totalAmountCents
+          unit_amount: pricePerTicketCents
         },
-        quantity: 1
+        quantity: tickets
       }],
       mode: "payment",
       success_url: `https://preethievents.netlify.app/success.html?bookingId=${bookingId}`,
       cancel_url: `https://preethievents.netlify.app/cancel.html`,
       metadata: { bookingId, ticketType, eventId, tickets },
       payment_intent_data: {
-        application_fee_amount: mainAmount,           // 90% stays in main account
-        transfer_data: { destination: connectedAccountId } // 10% goes to connected account
+        application_fee_amount: mainAmount,           // 90% → main account
+        transfer_data: { destination: connectedAccountId } // 10% → connected account
       }
     });
 
