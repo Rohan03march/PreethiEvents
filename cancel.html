@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Cancelled</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: #f0f2f5;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .cancel-container {
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px 50px;
+      text-align: center;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      border: 2px solid #dc3545;
+      max-width: 400px;
+    }
+
+    .cancel-icon {
+      font-size: 80px;
+      color: #dc3545;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #555;
+      margin-bottom: 25px;
+    }
+
+    .back-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: background 0.3s;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+    .back-btn:hover {
+      background: #b71c1c;
+    }
+
+    .home-btn {
+      background: #6c63ff;
+      border: none;
+      color: white;
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .home-btn:hover {
+      background: #5a54e2;
+    }
+
+    @media (max-width: 768px) {
+      .cancel-container {
+        width: 90%;
+        padding: 30px 20px;
+      }
+      .back-btn {
+        top: 15px;
+        left: 15px;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Back Button -->
+<button class="back-btn" onclick="window.location.href='index.html'">
+  <i class="bi bi-arrow-left"></i>
+</button>
+
+<div class="cancel-container">
+  <i class="bi bi-x-circle-fill cancel-icon"></i>
+  <h2>Booking Cancelled</h2>
+  <p>It seems your booking has been cancelled. You can go back and try again later.</p>
+  <button class="home-btn" onclick="window.location.href='index.html'">
+    Back to Home
+  </button>
+</div>
+
+<!-- Disable Inspect -->
+<script>
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("keydown", e => {
+  if (e.key === "F12" ||
+      (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J")) ||
+      (e.ctrlKey && (e.key === "U" || e.key === "S"))) {
+    e.preventDefault();
+  }
+});
+</script>
+
+</body>
+</html>
