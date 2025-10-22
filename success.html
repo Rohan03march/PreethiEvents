@@ -116,12 +116,12 @@
       }
 
       .info {
-        text-align: left;
+        text-align: center;
         background: rgba(255, 255, 255, 0.1);
         border-radius: 15px;
         padding: 15px;
         font-size: 0.9rem;
-        line-height: 1.6;
+        line-height: 1.7;
         margin-bottom: 25px;
       }
 
@@ -231,15 +231,7 @@
 
             eventDetailsDiv.innerHTML = `
               <div class="info">
-                <p><strong>Event:</strong> ${data.eventName}(${data.ticketType})</p>
-                <p><strong>Tickets:</strong> ${data.tickets}</p>
-                <p><strong>Total Amount:</strong> $${data.totalAmount}</p>
-                <p><strong>Status:</strong> ${
-                  data.status === "paid"
-                    ? '<span style="color:#00e676;font-weight:600;">Paid</span>'
-                    : '<span style="color:#ffb300;font-weight:600;">Pending</span>'
-                }</p>
-                <p><strong>Booking ID:</strong> ${data.bookingId}</p>
+                <p><strong>Booking ID:</strong></br>${data.bookingId}</p>
               </div>
             `;
           } else {
